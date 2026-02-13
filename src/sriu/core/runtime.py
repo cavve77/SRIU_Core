@@ -1,94 +1,117 @@
-# 文件路径: src/sriu/core/runtime.py
 import subprocess
 import sys
-import io
-import contextlib
+import traceback
 from typing import Optional
 
-# 引入我们定义的结构
-from .state import TaskState, Action, TaskStatus
+# 引入我们刚定义好的 State 和 Logic 组件
+from .state import TaskState, TaskStatus, Action
+from .logic import LogicEngine
 
 class Runtime:
-    def __init__(self):
-        self.working_dir = "." # 默认工作目录
+    """
+    SRIU 执行器 - Phase 5 Logic Lock Enabled
+    职责：
+    1. 接收 TaskState
+    2. [NEW] 运行 LogicEngine 检查 verification_script
+    3. 如果安全 -> 顺序执行 Plan 中的 Actions
+    4. 返回更新后的 TaskState
+    """
 
-    def _run_shell(self, command: str) -> str:
-        """执行 PowerShell 指令"""
-        print(f"   [SHELL] Executing: {command}")
-        try:
-            # 使用 powershell.exe 执行，确保环境一致性
-            result = subprocess.run(
-                ["powershell", "-Command", command],
-                capture_output=True,
-                text=True,
-                cwd=self.working_dir
-            )
-            output = result.stdout.strip()
-            error = result.stderr.strip()
-            
-            if result.returncode != 0:
-                raise Exception(f"Exit Code {result.returncode}\nStderr: {error}")
-            
-            return output if output else "(No Output)"
-            
-        except Exception as e:
-            raise Exception(f"Shell Execution Failed: {str(e)}")
-
-    def _run_python(self, code: str) -> str:
-        """执行纯 Python 逻辑 (REPL模式)"""
-        print(f"   [PYTHON] Executing Logic...")
+    def execute(self, task: TaskState) -> TaskState:
+        """
+        执行整个计划。
+        """
+        print("\n" + "="*50)
+        print(">>> RUNTIME ENGAGED")
         
-        # 捕获 stdout，这样 print() 的内容才能被 SRIU 读取
-        output_capture = io.StringIO()
-        try:
-            with contextlib.redirect_stdout(output_capture):
-                # 警告: exec() 极其危险，生产环境需要沙箱隔离
-                # 这里为了原型开发，我们直接在当前进程运行
-                exec(code, {"__name__": "__main__"})
-            return output_capture.getvalue().strip()
-        except Exception as e:
-            raise Exception(f"Python Runtime Error: {str(e)}")
+        # ---------------------------------------------------------
+        # 1. PHASE 5: LOGIC LOCK CHECK
+        # ---------------------------------------------------------
+        if task.verification_script:
+            print(f"🔒 [Logic Lock] Detected verification script. Validating...")
+            task.update_status(TaskStatus.VERIFYING_LOGIC)
+            
+            # 调用逻辑引擎
+            is_safe, proof_log = LogicEngine.verify_proof(task.verification_script)
+            task.log(proof_log)
+            
+            if not is_safe:
+                print(f"⛔ [Logic Lock] BLOCKED. Proof failed. Aborting execution.")
+                task.update_status(TaskStatus.FAILED)
+                # 逻辑验证失败，直接返回，不执行任何 Action
+                return task
+            
+            print(f"🔓 [Logic Lock] PROOF ACCEPTED. System is SAFE. Proceeding to execution.")
+        else:
+            print(f"ℹ️ [Logic Lock] No verification script provided. Proceeding (Standard Mode).")
 
-    def execute_task(self, task: TaskState):
-        """核心循环：遍历计划并执行"""
-        print(f"\n[*] Starting Execution Phase (Steps: {len(task.plan)})")
+        # ---------------------------------------------------------
+        # 2. EXECUTION LOOP
+        # ---------------------------------------------------------
         task.update_status(TaskStatus.EXECUTING)
-
+        
         for i, action in enumerate(task.plan):
-            step_num = i + 1
-            print(f"\n>>> Step {step_num}/{len(task.plan)}: {action.rationale}")
+            step_id = f"Step {i+1}/{len(task.plan)}"
+            print(f"⚡ {step_id}: {action.tool_name} | Args: {action.args}")
             
             try:
                 result = ""
-                # 根据工具类型分发
+                # Dispatcher (工具分发)
                 if action.tool_name == "run_shell":
-                    result = self._run_shell(action.code)
-                elif action.tool_name == "python_repl":
-                    result = self._run_python(action.code)
-                elif action.tool_name == "write_file":
-                    # 作为一个简单的内置功能处理
-                    # 也可以让 LLM 用 python_repl 写文件，但这更稳定
-                    filename, content = action.code.split("|||", 1) # 简易协议
-                    with open(filename.strip(), "w", encoding="utf-8") as f:
-                        f.write(content)
-                    result = f"File '{filename}' written successfully."
+                    cmd = action.args.get("command", "")
+                    if not cmd: raise ValueError("Missing 'command' in args")
+                    result = self._run_shell(cmd)
+                    
+                elif action.tool_name == "run_python":
+                    code = action.args.get("code", "")
+                    if not code: raise ValueError("Missing 'code' in args")
+                    result = self._run_python(code)
+                    
                 else:
-                    raise ValueError(f"Unknown tool: {action.tool_name}")
-
-                # 记录成功结果
+                    result = f"Error: Unknown tool '{action.tool_name}'"
+                
+                # 记录结果
                 action.result = result
-                print(f"   [OK] Result: {result[:100]}..." if len(result) > 100 else f"   [OK] Result: {result}")
-                task.history.append(f"Step {step_num} Success: {result}")
-
+                print(f"   -> Result: {result[:100]}..." if len(result) > 100 else f"   -> Result: {result}")
+                
             except Exception as e:
-                # 捕捉到任何错误 -> 任务失败
-                error_msg = str(e)
-                print(f"   [!!!] Execution Failed: {error_msg}")
-                action.result = f"ERROR: {error_msg}"
-                task.history.append(f"Step {step_num} FAILED: {error_msg}")
+                err_msg = f"Runtime Error at {step_id}: {str(e)}"
+                print(f"❌ {err_msg}")
+                action.result = err_msg
+                task.log(err_msg)
                 task.update_status(TaskStatus.FAILED)
-                return # 立即停止，不执行后续步骤 (自律原则)
-
-        # 如果循环走完没有报错
+                return task
+                
+        # 全部执行成功
         task.update_status(TaskStatus.COMPLETED)
-        print(f"\n[*] Task Completed Successfully.")
+        print(">>> RUNTIME FINISHED: SUCCESS")
+        print("="*50 + "\n")
+        return task
+
+    def _run_shell(self, command: str) -> str:
+        """在 Windows PowerShell 中执行命令"""
+        try:
+            # 使用 powershell /c 来确保兼容性
+            process = subprocess.run(
+                ["powershell", "-Command", command],
+                capture_output=True,
+                text=True,
+                check=True # 如果命令返回非0，抛出异常
+            )
+            return process.stdout.strip()
+        except subprocess.CalledProcessError as e:
+            # 捕获标准错误输出
+            return f"Shell Error (Exit Code {e.returncode}): {e.stderr.strip()}"
+
+    def _run_python(self, code: str) -> str:
+        """在子进程中执行 Python 代码 (隔离环境)"""
+        try:
+            process = subprocess.run(
+                [sys.executable, "-c", code],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            return process.stdout.strip()
+        except subprocess.CalledProcessError as e:
+            return f"Python Execution Error: {e.stderr.strip()}"
