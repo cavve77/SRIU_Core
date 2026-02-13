@@ -1,3 +1,4 @@
+# 文件路径: src/sriu/core/compiler.py
 import json
 import os
 from typing import List, Optional
@@ -8,16 +9,16 @@ from google.genai import types
 
 from .state import TaskState, TaskStatus
 
-# [Phase 5] 增强版 Prompt
+# [Phase 5.2] Prompt 升级：强制显式输出
 SYSTEM_PROMPT = """
 You are the SRIU (Self-Regulating Intelligence Unit) Semantic Compiler.
 Your goal is to convert Natural Language Instructions into a Deterministic Execution Plan (JSON).
 
 ### PROTOCOL V0.5 (LOGIC LOCK)
 1. **Safety First**: 
-   - If the user asks for high-risk operations (e.g., deleting files, system modification), you MUST generate a Z3 Proof.
-   - The Z3 Proof is a Python script included in the `verification_script` field.
-   - This script must verify logical invariants. If logic holds, it MUST `print("SAFE")`. Otherwise `print("UNSAFE")`.
+   - If the user asks for high-risk operations (e.g., deleting files), generate a Z3 Proof in `verification_script`.
+2. **Explicit Output**:
+   - If the user asks a question (e.g., "What is 1+1?"), you MUST use `run_python` to `print()` the answer. Do not just output an empty plan.
 
 ### TOOLSET
 1. `run_shell`
@@ -25,21 +26,22 @@ Your goal is to convert Natural Language Instructions into a Deterministic Execu
    - description: Execute PowerShell commands.
 2. `run_python`
    - args: { "code": "string" }
-   - description: Execute Python scripts for calculation or data processing.
+   - description: Execute Python scripts. Use this to PRINT answers to the user.
 
 ### OUTPUT FORMAT (STRICT JSON)
 {
   "original_intent": "User instruction here",
   "plan": [
     { 
-      "tool_name": "run_shell", 
-      "args": { "command": "echo 'Hello'" }, 
-      "rationale": "To verify system responsiveness." 
+      "tool_name": "run_python", 
+      "args": { "code": "print('The answer is 42')" }, 
+      "rationale": "Using Python to output the answer explicitly." 
     }
   ],
-  "verification_script": "from z3 import *\\nprint('SAFE')"  // Optional, strictly for risk control
+  "verification_script": "from z3 import *\\nprint('SAFE')"  // Optional
 }
 """
+
 
 class SemanticCompiler:
     def __init__(self, model_id: str):
@@ -53,12 +55,13 @@ class SemanticCompiler:
         # [Best Practice] Client 初始化
         self.client = genai.Client(api_key=api_key)
         self.model_id = model_id
-        print(f"   >>> Compiler attached to logic core: [{self.model_id}]")
+        # [Kaomoji] 替换 Emoji
+        print(f"   (o_O) Compiler attached to logic core: [{self.model_id}]")
 
     @staticmethod
     def get_available_models() -> List[str]:
         """
-        动态获取可用模型列表 (修复版 - 移除不支持的属性检查)
+        动态获取可用模型列表 (修复版)
         """
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
@@ -69,21 +72,17 @@ class SemanticCompiler:
             valid_models = []
             
             # 获取模型列表
-            # 注意: list() 返回的是生成器，直接遍历
             for m in client.models.list():
-                # [Fix] 不再检查 supported_generation_methods，直接检查名称
                 name = m.name.lower()
-                # 简单过滤: 必须包含 gemini，且不是 embedding 模型
                 if "gemini" in name and "embedding" not in name:
                     clean_id = name.replace("models/", "")
                     valid_models.append(clean_id)
             
-            # 按名称排序
             return sorted(valid_models, reverse=True)
             
         except Exception as e:
-            print(f"⚠️ Failed to fetch models: {e}")
-            # Fallback list if network/API fails
+            # [Kaomoji] 替换 Emoji (Warning)
+            print(f"(>_<) Failed to fetch models: {e}")
             return ["gemini-1.5-flash", "gemini-1.5-pro"]
 
     def compile(self, user_instruction: str) -> TaskState:
@@ -118,8 +117,8 @@ class SemanticCompiler:
             return TaskState(**data)
             
         except Exception as e:
-            # [修复缩进错误的关键部分]
-            print(f"❌ Compiler Error: {e}")
+            # [Kaomoji] 替换 Emoji (Error)
+            print(f"(×_×#) Compiler Error: {e}")
             return TaskState(
                 original_intent=user_instruction,
                 current_status=TaskStatus.FAILED,
