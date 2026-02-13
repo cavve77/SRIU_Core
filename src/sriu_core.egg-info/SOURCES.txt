@@ -1,0 +1,16 @@
+README.md
+pyproject.toml
+src/sriu/__init__.py
+src/sriu/console.py
+src/sriu/main.py
+src/sriu/core/__init__.py
+src/sriu/core/compiler.py
+src/sriu/core/logic.py
+src/sriu/core/runtime.py
+src/sriu/core/state.py
+src/sriu/tools/__init__.py
+src/sriu_core.egg-info/PKG-INFO
+src/sriu_core.egg-info/SOURCES.txt
+src/sriu_core.egg-info/dependency_links.txt
+src/sriu_core.egg-info/requires.txt
+src/sriu_core.egg-info/top_level.txt

@@ -1,0 +1,4 @@
+google-genai>=1.63.0
+pydantic>=2.12.5
+python-dotenv>=1.2.1
+z3-solver>=4.15.8.0

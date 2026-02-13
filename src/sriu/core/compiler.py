@@ -1,152 +1,127 @@
-# 文件路径: src/sriu/core/compiler.py
-import os
 import json
-import re
-from typing import Optional
-from dotenv import load_dotenv
+import os
+from typing import List, Optional
+
+# [Best Practice] 使用官方推荐的导入路径
 from google import genai
-from pydantic import ValidationError
+from google.genai import types
 
-# 引入状态定义
-from .state import TaskState, Action, TaskStatus
+from .state import TaskState, TaskStatus
 
-# 加载环境变量
-load_dotenv()
+# [Phase 5] 增强版 Prompt
+SYSTEM_PROMPT = """
+You are the SRIU (Self-Regulating Intelligence Unit) Semantic Compiler.
+Your goal is to convert Natural Language Instructions into a Deterministic Execution Plan (JSON).
+
+### PROTOCOL V0.5 (LOGIC LOCK)
+1. **Safety First**: 
+   - If the user asks for high-risk operations (e.g., deleting files, system modification), you MUST generate a Z3 Proof.
+   - The Z3 Proof is a Python script included in the `verification_script` field.
+   - This script must verify logical invariants. If logic holds, it MUST `print("SAFE")`. Otherwise `print("UNSAFE")`.
+
+### TOOLSET
+1. `run_shell`
+   - args: { "command": "string" }
+   - description: Execute PowerShell commands.
+2. `run_python`
+   - args: { "code": "string" }
+   - description: Execute Python scripts for calculation or data processing.
+
+### OUTPUT FORMAT (STRICT JSON)
+{
+  "original_intent": "User instruction here",
+  "plan": [
+    { 
+      "tool_name": "run_shell", 
+      "args": { "command": "echo 'Hello'" }, 
+      "rationale": "To verify system responsiveness." 
+    }
+  ],
+  "verification_script": "from z3 import *\\nprint('SAFE')"  // Optional, strictly for risk control
+}
+"""
 
 class SemanticCompiler:
-    def __init__(self):
+    def __init__(self, model_id: str):
+        """
+        初始化编译器 - 使用 Google GenAI SDK (Modern)
+        """
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("FATAL: GEMINI_API_KEY not found in .env or environment!")
+            raise ValueError("GEMINI_API_KEY not found.")
         
-        # 初始化 Gemini 客户端
+        # [Best Practice] Client 初始化
         self.client = genai.Client(api_key=api_key)
-        self.model_name = "gemini-2.0-flash" 
+        self.model_id = model_id
+        print(f"   >>> Compiler attached to logic core: [{self.model_id}]")
 
-    def _clean_json_response(self, text: str) -> str:
-        """清洗 Gemini 返回的 Markdown 代码块"""
-        text = re.sub(r"^```json\s*", "", text, flags=re.MULTILINE)
-        text = re.sub(r"^```\s*", "", text, flags=re.MULTILINE)
-        text = re.sub(r"```$", "", text, flags=re.MULTILINE)
-        return text.strip()
-
-    def compile_intent(self, user_intent: str) -> TaskState:
+    @staticmethod
+    def get_available_models() -> List[str]:
         """
-        核心方法：将自然语言编译为结构化任务状态
+        动态获取可用模型列表 (修复版 - 移除不支持的属性检查)
         """
-        print(f"[*] Compiling Intent: '{user_intent}' ...")
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            return []
         
-        # 1. 构建系统提示词 (包含 write_file 协议修复)
-        prompt = f"""
-        You are the SRIU (Self-Regulating Intelligence Unit) Semantic Compiler.
-        Your goal is to translate a User Intent into a deterministic execution plan.
-
-        TARGET SCHEMA (JSON):
-        {{
-            "original_intent": "{user_intent}",
-            "plan": [
-                {{
-                    "tool_name": "One of [run_shell, python_repl, write_file]",
-                    "code": "The exact code or parameters",
-                    "rationale": "Why this step is necessary"
-                }}
-            ]
-        }}
-
-        RULES:
-        1. You must output VALID JSON only. No chatting.
-        2. Break complex tasks into multiple atomic actions in the 'plan' list.
-        3. Tool usage:
-           - 'run_shell': for PowerShell commands (dir, git, pip, mkdir).
-           - 'python_repl': for pure logic, math, or data processing.
-           - 'write_file': MUST use the format "filename|||content" in the 'code' field. 
-             Example: "test.txt|||Hello World". Use '\\n' for newlines.
-        4. If the intent is unclear, generate a plan with a single action to 'echo' a clarification question.
-
-        USER INTENT:
-        "{user_intent}"
-        """
-
-        # 2. 调用 Gemini
         try:
-            response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=prompt
-            )
-            raw_text = response.text
-        except Exception as e:
-            print(f"[!] API Call Failed: {e}")
-            return TaskState(original_intent=user_intent, current_status=TaskStatus.FAILED)
-
-        # 3. 解析与验证
-        try:
-            cleaned_json = self._clean_json_response(raw_text)
-            data = json.loads(cleaned_json)
+            client = genai.Client(api_key=api_key)
+            valid_models = []
             
-            if "original_intent" not in data:
-                data["original_intent"] = user_intent
-                
-            task = TaskState(**data)
-            task.current_status = TaskStatus.THINKING
-            print(f"[+] Compilation Success. Generated {len(task.plan)} steps.")
-            return task
+            # 获取模型列表
+            # 注意: list() 返回的是生成器，直接遍历
+            for m in client.models.list():
+                # [Fix] 不再检查 supported_generation_methods，直接检查名称
+                name = m.name.lower()
+                # 简单过滤: 必须包含 gemini，且不是 embedding 模型
+                if "gemini" in name and "embedding" not in name:
+                    clean_id = name.replace("models/", "")
+                    valid_models.append(clean_id)
+            
+            # 按名称排序
+            return sorted(valid_models, reverse=True)
+            
+        except Exception as e:
+            print(f"⚠️ Failed to fetch models: {e}")
+            # Fallback list if network/API fails
+            return ["gemini-1.5-flash", "gemini-1.5-pro"]
 
-        except (json.JSONDecodeError, ValidationError) as e:
-            print(f"[!] Compilation Error (Invalid JSON/Schema): {e}")
-            print(f"[DEBUG] Raw Output: {raw_text}")
-            return TaskState(original_intent=user_intent, current_status=TaskStatus.FAILED)
-
-    def compile_fix(self, original_task: TaskState, error_log: str) -> TaskState:
-        """
-        修复模式：当执行失败时，基于错误日志生成新的修复计划
-        """
-        print(f"[*] Analyzing Error & Generating Fix...")
+    def compile(self, user_instruction: str) -> TaskState:
+        # 构建 Prompt
+        full_prompt = f"{SYSTEM_PROMPT}\n\nUSER INSTRUCTION: {user_instruction}\n\nJSON PLAN:"
         
-        prompt = f"""
-        SYSTEM ALERT: The previous execution plan FAILED.
-        You are the SRIU Debugger. Your goal is to fix the error and complete the original intent.
-
-        ORIGINAL INTENT:
-        "{original_task.original_intent}"
-
-        FAILED PLAN HISTORY:
-        {json.dumps([a.dict() for a in original_task.plan], indent=2)}
-
-        ERROR LOG (STDERR):
-        "{error_log}"
-
-        INSTRUCTIONS:
-        1. Analyze the error log carefully.
-        2. Generate a NEW plan that fixes the issue or tries an alternative approach.
-        3. Output valid JSON matching the standard TaskState schema.
-        4. If the error implies the task is impossible, use a 'python_repl' tool to print a detailed explanation.
-        5. For 'write_file', REMEMBER the format: "filename|||content".
-
-        TARGET SCHEMA (JSON):
-        {{
-            "original_intent": "{original_task.original_intent}",
-            "plan": [ ... corrected steps ... ]
-        }}
-        """
-
         try:
+            # [Best Practice] 使用 types.GenerateContentConfig 进行类型安全的配置
+            config = types.GenerateContentConfig(
+                response_mime_type="application/json",
+                temperature=0.1,
+                max_output_tokens=2000,
+            )
+
             response = self.client.models.generate_content(
-                model=self.model_name,
-                contents=prompt
+                model=self.model_id,
+                contents=full_prompt,
+                config=config
             )
             
-            cleaned_json = self._clean_json_response(response.text)
-            data = json.loads(cleaned_json)
-            
-            if "original_intent" not in data:
-                data["original_intent"] = original_task.original_intent
-                
-            new_task = TaskState(**data)
-            new_task.current_status = TaskStatus.THINKING
-            print(f"[+] Fix Plan Generated. New Steps: {len(new_task.plan)}")
-            return new_task
+            if not response.text:
+                raise ValueError("Empty response from Gemini API")
 
+            # 解析 JSON
+            data = json.loads(response.text)
+            
+            # 数据清洗
+            if "original_intent" not in data:
+                data["original_intent"] = user_instruction
+
+            # 返回任务状态
+            return TaskState(**data)
+            
         except Exception as e:
-            print(f"[!] Fix Generation Failed: {e}")
-            # 如果修复也失败了，就真的失败了
-            return TaskState(original_intent=original_task.original_intent, current_status=TaskStatus.FAILED)
+            # [修复缩进错误的关键部分]
+            print(f"❌ Compiler Error: {e}")
+            return TaskState(
+                original_intent=user_instruction,
+                current_status=TaskStatus.FAILED,
+                history=[f"Compilation Failed: {str(e)}"]
+            )
