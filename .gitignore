@@ -7,3 +7,6 @@ __pycache__/
 sriu_temp*/
 ghost_file.txt
 *.log
+.aider.chat.history.md
+.aider.input.history
+.vscode/
