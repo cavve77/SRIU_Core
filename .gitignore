@@ -10,3 +10,8 @@ ghost_file.txt
 .aider.chat.history.md
 .aider.input.history
 .vscode/
+
+# PyInstaller Artifacts
+build/
+dist/
+*.spec
