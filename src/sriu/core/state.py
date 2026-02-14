@@ -20,7 +20,6 @@ class TaskStatus(str, Enum):
     FAILED = "failed"
 
 # 3. [FIX] 严格参数定义 (Strict Args Schema)
-# 解决 Gemini API "additionalProperties not supported" 报错的核心
 class ActionArgs(BaseModel):
     command: Optional[str] = Field(None, description="Shell command string (for run_shell)")
     code: Optional[str] = Field(None, description="Python source code (for run_python)")
@@ -30,16 +29,18 @@ class ActionArgs(BaseModel):
 # 4. 原子行动定义
 class Action(BaseModel):
     tool_name: ActionType = Field(..., description="The tool to execute")
-    
-    # [IMPORTANT] 这里不再是 Dict，而是具体的 ActionArgs 对象
     args: ActionArgs = Field(..., description="Arguments for the tool")
-    
     rationale: str = Field(..., description="Why this step is necessary")
     result: Optional[str] = Field(None, description="Execution result (Output)")
 
 # 5. 任务状态机
 class TaskState(BaseModel):
     original_intent: str = Field(..., description="User's original instruction")
+    
+    # [CRITICAL FIX] 移除 usage 字段定义。
+    # 原因：Gemini API 不支持 Dict/additionalProperties。
+    # 我们将在 runtime 动态注入这个属性，而不是让 LLM 生成它。
+    
     current_status: TaskStatus = TaskStatus.PENDING
     
     plan: List[Action] = Field(default_factory=list, description="List of actions")
@@ -50,8 +51,6 @@ class TaskState(BaseModel):
     )
     
     history: List[str] = Field(default_factory=list, description="Execution logs")
-    
-    # [Removed] memory 字段被暂时移除，以简化 JSON Schema，避免 API 报错
     
     def log(self, message: str):
         self.history.append(message)

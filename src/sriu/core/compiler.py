@@ -77,28 +77,24 @@ class SemanticCompiler:
         """
         初始化编译器 - 使用 Google GenAI SDK (Modern)
         """
-        # 获取 API KEY，不再依赖 os.getenv 的默认值，强制检查
         self.api_key = os.environ.get("GEMINI_API_KEY")
         if not self.api_key:
             raise ValueError("(x_x) GEMINI_API_KEY not found in environment.")
         
-        # [Best Practice] Client 初始化
         self.client = genai.Client(api_key=self.api_key)
         self.model_id = model_id
-        # [Kaomoji] 替换 Emoji
         print(f"   (o_O) Compiler attached to logic core: [{self.model_id}]")
 
     @staticmethod
     def get_available_models() -> List[str]:
         """
-        动态获取可用模型列表 (保持原有逻辑以支持 Console 启动)
+        动态获取可用模型列表
         """
         api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
             return []
         
         try:
-            # 临时 Client 用于发现模型
             client = genai.Client(api_key=api_key)
             valid_models = []
             
@@ -121,7 +117,6 @@ class SemanticCompiler:
         """
         print(f">> (o_O) Thinking... [Logic Lock: ACTIVE] [Keeper: ACTIVE]")
         
-        # 将上下文注入到用户指令之前，让 LLM 优先理解项目状态
         augmented_instruction = f"""
 [PROJECT CONTEXT]
 {project_context}
@@ -131,13 +126,12 @@ class SemanticCompiler:
 """
         
         try:
-            # [Phase 6 Upgrade] 使用 response_schema 进行结构化输出
             config = types.GenerateContentConfig(
                 system_instruction=SYSTEM_PROMPT,
                 response_mime_type="application/json",
                 response_schema=TaskState, 
-                temperature=0.1, # 保持冷静
-                max_output_tokens=16384, # [Phase 6.2] 增加 Token 以支持长文件/注册表维护
+                temperature=0.1,
+                max_output_tokens=16384,
             )
 
             response = self.client.models.generate_content(
@@ -149,10 +143,22 @@ class SemanticCompiler:
             if not response.text:
                 raise ValueError("Empty response from Gemini API")
 
-            # [Phase 6 Upgrade] 直接使用 Pydantic 解析 JSON
+            # 1. Pydantic 解析 (Schema 中没有 usage，不会报错)
             task_plan = TaskState.model_validate_json(response.text)
             
-            # 补充原始意图
+            # 2. 动态注入 Usage 数据 (Python 运行时黑客)
+            # 即使 TaskState 定义里没有 usage，Python 也允许动态添加属性
+            # 或者，如果 Pydantic 报错，可以使用 object.__setattr__
+            if hasattr(response, 'usage_metadata') and response.usage_metadata:
+                usage_data = {
+                    'prompt_tokens': response.usage_metadata.prompt_token_count,
+                    'completion_tokens': response.usage_metadata.candidates_token_count,
+                    'total_tokens': response.usage_metadata.total_token_count
+                }
+                # 强行注入，绕过 Pydantic 的 __setattr__ 检查 (如果存在)
+                object.__setattr__(task_plan, 'usage', usage_data)
+            
+            # 3. 补充原始意图
             if not task_plan.original_intent:
                 task_plan.original_intent = user_instruction
 
