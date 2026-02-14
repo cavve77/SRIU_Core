@@ -1,0 +1,125 @@
+{
+  "project_name": "SRIU_Project",
+  "assets": {
+    "project_roadmap.md": {
+      "path": "project_roadmap.md",
+      "desc": "Project Roadmap and Goals",
+      "used_in": []
+    },
+    "sriu.console": {
+      "path": "src/sriu/console.py",
+      "desc": "Module sriu.console",
+      "used_in": []
+    },
+    "get_tree_structure": {
+      "path": "src/sriu/console.py",
+      "desc": "[Keeper] \u751f\u6210\u5f53\u524d\u76ee\u5f55\u6811\u7ed3\u6784 (\u9650\u5236\u6df1\u5ea6\u4ee5\u8282\u7701 Token)",
+      "used_in": []
+    },
+    "load_keeper_context": {
+      "path": "src/sriu/console.py",
+      "desc": "[Keeper] \u8bfb\u53d6\u9879\u76ee\u7ba1\u7406\u6587\u4ef6\uff0c\u6784\u5efa\u4e0a\u4e0b\u6587",
+      "used_in": []
+    },
+    "init_project_files": {
+      "path": "src/sriu/console.py",
+      "desc": "[Keeper] \u521d\u59cb\u5316\u6807\u51c6\u6587\u4ef6",
+      "used_in": []
+    },
+    "select_model_interactive": {
+      "path": "src/sriu/console.py",
+      "desc": "No description provided.",
+      "used_in": []
+    },
+    "main": {
+      "path": "src/sriu/console.py",
+      "desc": "No description provided.",
+      "used_in": []
+    },
+    "sriu.main": {
+      "path": "src/sriu/main.py",
+      "desc": "Module sriu.main",
+      "used_in": []
+    },
+    "sriu.main.main": {
+      "path": "src/sriu/main.py",
+      "desc": "No description provided.",
+      "used_in": []
+    },
+    "sriu": {
+      "path": "src/sriu/__init__.py",
+      "desc": "Module sriu",
+      "used_in": []
+    },
+    "sriu.core.compiler": {
+      "path": "src/sriu/core/compiler.py",
+      "desc": "Module sriu.core.compiler",
+      "used_in": []
+    },
+    "SemanticCompiler": {
+      "path": "src/sriu/core/compiler.py",
+      "desc": "No description provided.",
+      "used_in": []
+    },
+    "sriu.core.logic": {
+      "path": "src/sriu/core/logic.py",
+      "desc": "Module sriu.core.logic",
+      "used_in": []
+    },
+    "LogicEngine": {
+      "path": "src/sriu/core/logic.py",
+      "desc": "Phase 5 Component: Logic Lock (Kaomoji Edition)",
+      "used_in": []
+    },
+    "sriu.core.runtime": {
+      "path": "src/sriu/core/runtime.py",
+      "desc": "Module sriu.core.runtime",
+      "used_in": []
+    },
+    "Runtime": {
+      "path": "src/sriu/core/runtime.py",
+      "desc": "SRIU \u6267\u884c\u5668 - Phase 6: Native File Tools & Strict Schema (Kaomoji Edition)",
+      "used_in": []
+    },
+    "sriu.core.state": {
+      "path": "src/sriu/core/state.py",
+      "desc": "Module sriu.core.state",
+      "used_in": []
+    },
+    "ActionType": {
+      "path": "src/sriu/core/state.py",
+      "desc": "No description provided.",
+      "used_in": []
+    },
+    "TaskStatus": {
+      "path": "src/sriu/core/state.py",
+      "desc": "No description provided.",
+      "used_in": []
+    },
+    "ActionArgs": {
+      "path": "src/sriu/core/state.py",
+      "desc": "No description provided.",
+      "used_in": []
+    },
+    "Action": {
+      "path": "src/sriu/core/state.py",
+      "desc": "No description provided.",
+      "used_in": []
+    },
+    "TaskState": {
+      "path": "src/sriu/core/state.py",
+      "desc": "No description provided.",
+      "used_in": []
+    },
+    "sriu.core": {
+      "path": "src/sriu/core/__init__.py",
+      "desc": "Module sriu.core",
+      "used_in": []
+    },
+    "sriu.tools": {
+      "path": "src/sriu/tools/__init__.py",
+      "desc": "Module sriu.tools",
+      "used_in": []
+    }
+  }
+}
