@@ -1,9 +1,88 @@
 # 文件路径: src/sriu/console.py
 import os
 import sys
+from pathlib import Path
+
+# 确保能找到 sriu 模块 (如果直接运行脚本)
+sys.path.append(os.path.join(os.path.dirname(__file__), "../../"))
+
 from sriu.core.compiler import SemanticCompiler
 from sriu.core.runtime import Runtime
-from sriu.core.state import TaskState
+from sriu.core.state import TaskState, TaskStatus
+
+# --- [Phase 6.2] Project Keeper Helper Functions ---
+
+def get_tree_structure(path=".") -> str:
+    """[Keeper] 生成当前目录树结构 (限制深度以节省 Token)"""
+    tree_str = "root/\n"
+    try:
+        # 只显示16层深度
+        for root, dirs, files in os.walk(path):
+            level = root.replace(path, '').count(os.sep)
+            if level > 16: continue
+            
+            indent = ' ' * 4 * (level)
+            folder_name = os.path.basename(root)
+            if folder_name.startswith(".") or folder_name == "__pycache__": continue
+            
+            tree_str += f"{indent}{folder_name}/\n"
+            subindent = ' ' * 4 * (level + 1)
+            
+            for f in files:
+                if f.startswith(".") or f.endswith(".pyc"): continue
+                tree_str += f"{subindent}{f}\n"
+    except Exception:
+        tree_str = "(Tree generation failed)"
+    return tree_str
+
+def load_keeper_context() -> str:
+    """[Keeper] 读取项目管理文件，构建上下文"""
+    context = ""
+    
+    # 1. 架构 (动态生成)
+    context += f"--- [project_structure.tree] ---\n{get_tree_structure()}\n\n"
+    
+    # 2. 注册表
+    if os.path.exists("global_registry.json"):
+        try:
+            with open("global_registry.json", "r", encoding="utf-8") as f:
+                context += f"--- [global_registry.json] ---\n{f.read()}\n\n"
+        except: pass
+        
+    # 3. 路线图 (只读取部分，避免过长)
+    if os.path.exists("project_roadmap.md"):
+        try:
+            with open("project_roadmap.md", "r", encoding="utf-8") as f:
+                content = f.read()
+                # 截取前 100000 字符
+                context += f"--- [project_roadmap.md (Snippet)] ---\n{content[:100000]}...\n\n"
+        except: pass
+        
+    return context
+
+def init_project_files():
+    """[Keeper] 初始化标准文件"""
+    print(">> (o_O) Initializing Project Keeper Files...")
+    
+    # 1. Registry
+    if not os.path.exists("global_registry.json"):
+        with open("global_registry.json", "w", encoding="utf-8") as f:
+            f.write('{\n  "project_name": "SRIU_Project",\n  "assets": {}\n}')
+        print("   -> Created global_registry.json")
+    else:
+        print("   -> global_registry.json already exists.")
+        
+    # 2. Roadmap
+    if not os.path.exists("project_roadmap.md"):
+        with open("project_roadmap.md", "w", encoding="utf-8") as f:
+            f.write('# Project Roadmap\n\n## Goals\n- [ ] Initialize Project\n\n## Implemented\n\n## Todo\n')
+        print("   -> Created project_roadmap.md")
+    else:
+        print("   -> project_roadmap.md already exists.")
+        
+    print("   (b^_^)b Project Keeper Initialized.")
+
+# --- End Helper Functions ---
 
 def select_model_interactive():
     print(">> (o_O) Connecting to Google Neural Network...")
@@ -26,17 +105,16 @@ def select_model_interactive():
             idx = int(choice) - 1
             if 0 <= idx < len(models):
                 selected = models[idx]
-                # [Kaomoji Fix] 替换 ✅
                 print(f"(b^_^)b Selected: {selected}")
                 return selected
         print("Invalid selection.")
 
 def main():
     print("==========================================")
-    print("   SRIU v0.5.2 CONSOLE (Kaomoji Fix)")
+    print("   SRIU v0.6.2 CONSOLE (Project Keeper)")
     print("==========================================")
 
-    if not os.getenv("GEMINI_API_KEY"):
+    if not os.environ.get("GEMINI_API_KEY"):
         print("(×_×) [FATAL] API Key missing. Please run '. .\\boot.ps1'")
         return
 
@@ -58,7 +136,7 @@ def main():
         return
 
     print(f"\nSRIU is online. Logic Core: {model_id}")
-    print("Type 'exit' to quit.")
+    print("Commands: 'exit' to quit, 'init' to setup Project Keeper files.")
 
     while True:
         try:
@@ -67,10 +145,20 @@ def main():
             
             if not user_input: continue
             if user_input.lower() in ["exit", "quit"]: break
+            
+            # [Keeper] 初始化指令
+            if user_input.lower() == "init":
+                init_project_files()
+                continue
 
-            # A. Compile (Thinking)
-            print(f"( ⚙_⚙ ) Thinking...", end="\r")
-            task = compiler.compile(user_input)
+            # [Keeper] 自动加载上下文 (Auto-Context Injection)
+            print(f"( ⚙_⚙ ) Reading Context...", end="\r")
+            project_context = load_keeper_context()
+
+            # A. Compile (Thinking with Context)
+            print(f"( ⚙_⚙ ) Thinking with Context...", end="\r")
+            # [Phase 6.2] 传入上下文
+            task = compiler.compile(user_input, project_context)
             
             if task.current_status == "failed":
                 print(f"(×_×#) Compilation Failed: {task.history}")
@@ -80,18 +168,15 @@ def main():
             if task.verification_script:
                 print(f"[¬º-°]¬ [High Risk] Logic Verification Required.")
             else:
-                # [Kaomoji Fix] 替换 ℹ️
                 print(f"(o_O) [Standard] No Logic Lock triggered.")
 
             # C. Execute
             final_state = runtime.execute(task)
 
             # D. Result
-            if final_state.current_status == "completed":
-                # [Kaomoji Fix] 替换 ✅
+            if final_state.current_status == "completed": # 兼容 TaskStatus 枚举
                 print(f"(★^O^★) Mission Accomplished.")
             elif final_state.current_status == "failed":
-                # [Kaomoji Fix] 替换 ❌
                 print(f"(T_T) Mission Failed.")
 
         except KeyboardInterrupt:
