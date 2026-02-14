@@ -1,18 +1,22 @@
 {
   "meta": {
     "project": "SRIU_Project",
-    "updated_at": "2026-02-15T03:44:08.060969",
+    "updated_at": "2026-02-15T05:04:17.978430",
     "version": "0.7.0"
   },
   "files": {
     "src/sriu/console.py": {
       "defines": [
+        "sriu.console.MemoryBank",
         "sriu.console.get_tree_structure",
         "sriu.console.load_keeper_context",
         "sriu.console.init_project_files",
         "sriu.console.select_model",
         "sriu.console.Gatekeeper",
         "sriu.console.main",
+        "sriu.console.__init__",
+        "sriu.console.add",
+        "sriu.console.to_context_string",
         "sriu.console.__init__",
         "sriu.console.check"
       ],
@@ -73,6 +77,28 @@
       "defines": [],
       "imports": []
     },
+    "src/sriu/gui/app.py": {
+      "defines": [
+        "sriu.gui.app.SRIUNexus",
+        "sriu.gui.app.__init__",
+        "sriu.gui.app._init_ui",
+        "sriu.gui.app._log",
+        "sriu.gui.app.process_command",
+        "sriu.gui.app._execute_logic"
+      ],
+      "imports": []
+    },
+    "src/sriu/gui/theme.py": {
+      "defines": [
+        "sriu.gui.theme.Theme",
+        "sriu.gui.theme.apply"
+      ],
+      "imports": []
+    },
+    "src/sriu/gui/__init__.py": {
+      "defines": [],
+      "imports": []
+    },
     "src/sriu/tools/registry_scanner.py": {
       "defines": [
         "sriu.tools.registry_scanner.Scanner",
@@ -92,60 +118,81 @@
     }
   },
   "symbols": {
+    "sriu.console.MemoryBank": {
+      "type": "class",
+      "path": "src/sriu/console.py",
+      "line": 20,
+      "desc": "Short-term memory storage (The Hippocampus).\nStores up to 5 interactions (A1..A5).",
+      "used_by": []
+    },
     "sriu.console.get_tree_structure": {
       "type": "function",
       "path": "src/sriu/console.py",
-      "line": 19,
-      "desc": "Generate directory tree structure for context.",
+      "line": 72,
+      "desc": "No description provided.",
       "used_by": []
     },
     "sriu.console.load_keeper_context": {
       "type": "function",
       "path": "src/sriu/console.py",
-      "line": 39,
-      "desc": "Load project management files for context.",
+      "line": 88,
+      "desc": "No description provided.",
       "used_by": []
     },
     "sriu.console.init_project_files": {
       "type": "function",
       "path": "src/sriu/console.py",
-      "line": 64,
-      "desc": "Initialize standard files if missing.",
+      "line": 107,
+      "desc": "No description provided.",
       "used_by": []
     },
     "sriu.console.select_model": {
       "type": "function",
       "path": "src/sriu/console.py",
-      "line": 79,
-      "desc": "Generic model selection function.",
+      "line": 114,
+      "desc": "No description provided.",
       "used_by": []
     },
     "sriu.console.Gatekeeper": {
       "type": "class",
       "path": "src/sriu/console.py",
-      "line": 104,
-      "desc": "AI Gatekeeper to classify user intent (Engineering vs Chat).",
+      "line": 138,
+      "desc": "No description provided.",
       "used_by": []
     },
     "sriu.console.main": {
       "type": "function",
       "path": "src/sriu/console.py",
-      "line": 133,
+      "line": 163,
       "desc": "No description provided.",
       "used_by": []
     },
     "sriu.console.__init__": {
       "type": "function",
       "path": "src/sriu/console.py",
-      "line": 106,
+      "line": 139,
       "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.console.add": {
+      "type": "function",
+      "path": "src/sriu/console.py",
+      "line": 30,
+      "desc": "Register a completed interaction (A-Unit)",
+      "used_by": []
+    },
+    "sriu.console.to_context_string": {
+      "type": "function",
+      "path": "src/sriu/console.py",
+      "line": 54,
+      "desc": "Serialize memory for the Compiler's prompt",
       "used_by": []
     },
     "sriu.console.check": {
       "type": "function",
       "path": "src/sriu/console.py",
-      "line": 110,
-      "desc": "Returns 'ENGINEERING' or 'CHAT'.",
+      "line": 143,
+      "desc": "No description provided.",
       "used_by": []
     },
     "sriu.main.main": {
@@ -158,32 +205,33 @@
     "sriu.core.compiler.SemanticCompiler": {
       "type": "class",
       "path": "src/sriu/core/compiler.py",
-      "line": 67,
+      "line": 47,
       "desc": "No description provided.",
       "used_by": [
         "src/sriu/console.py",
-        "src/sriu/main.py"
+        "src/sriu/main.py",
+        "src/sriu/gui/app.py"
       ]
     },
     "sriu.core.compiler.__init__": {
       "type": "function",
       "path": "src/sriu/core/compiler.py",
-      "line": 68,
+      "line": 48,
       "desc": "No description provided.",
       "used_by": []
     },
     "sriu.core.compiler.get_available_models": {
       "type": "function",
       "path": "src/sriu/core/compiler.py",
-      "line": 77,
+      "line": 57,
       "desc": "No description provided.",
       "used_by": []
     },
     "sriu.core.compiler.compile": {
       "type": "function",
       "path": "src/sriu/core/compiler.py",
-      "line": 92,
-      "desc": "No description provided.",
+      "line": 72,
+      "desc": "[Phase 9 Update] Receives memory_context (A1..A5 logs)",
       "used_by": []
     },
     "sriu.core.logic.LogicEngine": {
@@ -209,7 +257,8 @@
       "desc": "SRIU \u6267\u884c\u5668 - Phase 8.2: Time Machine Enabled (Kaomoji Edition)\nCapabilities: Native File Tools, Strict Schema, Logic Lock, Auto-Backup.",
       "used_by": [
         "src/sriu/console.py",
-        "src/sriu/main.py"
+        "src/sriu/main.py",
+        "src/sriu/gui/app.py"
       ]
     },
     "sriu.core.runtime.__init__": {
@@ -321,6 +370,64 @@
       "type": "function",
       "path": "src/sriu/core/state.py",
       "line": 59,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.gui.app.SRIUNexus": {
+      "type": "class",
+      "path": "src/sriu/gui/app.py",
+      "line": 8,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.gui.app.__init__": {
+      "type": "function",
+      "path": "src/sriu/gui/app.py",
+      "line": 9,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.gui.app._init_ui": {
+      "type": "function",
+      "path": "src/sriu/gui/app.py",
+      "line": 21,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.gui.app._log": {
+      "type": "function",
+      "path": "src/sriu/gui/app.py",
+      "line": 39,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.gui.app.process_command": {
+      "type": "function",
+      "path": "src/sriu/gui/app.py",
+      "line": 45,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.gui.app._execute_logic": {
+      "type": "function",
+      "path": "src/sriu/gui/app.py",
+      "line": 55,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.gui.theme.Theme": {
+      "type": "class",
+      "path": "src/sriu/gui/theme.py",
+      "line": 1,
+      "desc": "No description provided.",
+      "used_by": [
+        "src/sriu/gui/app.py"
+      ]
+    },
+    "sriu.gui.theme.apply": {
+      "type": "function",
+      "path": "src/sriu/gui/theme.py",
+      "line": 9,
       "desc": "No description provided.",
       "used_by": []
     },
