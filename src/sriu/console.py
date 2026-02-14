@@ -1,6 +1,8 @@
+# 文件路径: src/sriu/console.py
 import os
 import sys
 import json
+import subprocess  # [Phase 8.3] Added for Auto-Sync
 from typing import List, Optional
 from google import genai
 from google.genai import types
@@ -8,7 +10,8 @@ from dotenv import load_dotenv
 
 from sriu.core.compiler import SemanticCompiler
 from sriu.core.runtime import Runtime
-from sriu.core.state import TaskStatus
+# [Phase 8.3] Added ActionType for intent detection
+from sriu.core.state import TaskStatus, ActionType
 
 # Load environment variables
 load_dotenv()
@@ -17,6 +20,10 @@ def get_tree_structure(path: str = ".", max_depth: int = 2) -> str:
     """Generate directory tree structure for context."""
     tree_str = []
     for root, dirs, files in os.walk(path):
+        # Skip .git, .sriu, __pycache__
+        if any(x in root for x in [".git", ".sriu", "__pycache__"]):
+            continue
+            
         level = root.replace(path, '').count(os.sep)
         if level > max_depth:
             continue
@@ -71,7 +78,11 @@ def init_project_files():
 
 def select_model(prompt_text: str, default_model: str) -> str:
     """Generic model selection function."""
-    models = SemanticCompiler.get_available_models()
+    try:
+        models = SemanticCompiler.get_available_models()
+    except Exception:
+        models = [default_model] # Fallback if API fails listing
+
     print(f"\n{prompt_text}")
     for i, m in enumerate(models):
         print(f"[{i}] {m}")
@@ -120,7 +131,7 @@ class Gatekeeper:
             return "ENGINEERING" # Fail-safe default
 
 def main():
-    print("SRIU Semantic Compiler (v0.7.0) - Initializing...")
+    print("SRIU Semantic Compiler (v0.8.3) - Initializing...")
     init_project_files()
     
     # 1. Select Logic Core Model
@@ -179,6 +190,35 @@ def main():
             # Execute
             if task.current_status != TaskStatus.FAILED:
                 runtime.execute(task)
+
+                # --- Phase 8.3: Strict Workflow (Registry Auto-Sync) ---
+                # Check if we need to update memory (only on file writes)
+                file_modified = False
+                if task.plan:
+                    for action in task.plan:
+                        if action.tool_name == ActionType.WRITE_FILE:
+                            file_modified = True
+                            break
+                
+                if file_modified and task.current_status == TaskStatus.COMPLETED:
+                    print("\n>>> (O_O) [Auto-Sync] Detected file modification. Refreshing Symbol Graph...")
+                    try:
+                        # Run the registry scanner to update global_registry.json
+                        # Using sys.executable to ensure we use the same venv/interpreter
+                        result = subprocess.run(
+                            [sys.executable, "src/sriu/tools/registry_scanner.py"], 
+                            capture_output=True, 
+                            text=True,
+                            check=True
+                        )
+                        print(">>> (^_^) [Auto-Sync] Registry updated successfully.")
+                        # Optional: Print scanner output if verbose
+                        # print(result.stdout) 
+                    except subprocess.CalledProcessError as e:
+                        print(f">>> (x_x) [Auto-Sync] Registry update FAILED: {e.stderr}")
+                    except Exception as e:
+                        print(f">>> (x_x) [Auto-Sync] Error: {e}")
+                # -------------------------------------------------------
                 
             # Token Usage Report
             if hasattr(task, 'usage_metadata') and task.usage_metadata:
