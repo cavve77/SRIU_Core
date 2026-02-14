@@ -1,125 +1,344 @@
 {
-  "project_name": "SRIU_Project",
-  "assets": {
-    "project_roadmap.md": {
-      "path": "project_roadmap.md",
-      "desc": "Project Roadmap and Goals",
-      "used_in": []
+  "meta": {
+    "project": "SRIU_Project",
+    "updated_at": "2026-02-15T01:49:36.475258",
+    "version": "0.7.0"
+  },
+  "files": {
+    "src/sriu/console.py": {
+      "defines": [
+        "sriu.console.get_tree_structure",
+        "sriu.console.load_keeper_context",
+        "sriu.console.init_project_files",
+        "sriu.console.select_model_interactive",
+        "sriu.console.main"
+      ],
+      "imports": []
     },
-    "sriu.console": {
-      "path": "src/sriu/console.py",
-      "desc": "Module sriu.console",
-      "used_in": []
+    "src/sriu/main.py": {
+      "defines": [
+        "sriu.main.main"
+      ],
+      "imports": []
     },
-    "get_tree_structure": {
+    "src/sriu/__init__.py": {
+      "defines": [],
+      "imports": []
+    },
+    "src/sriu/core/compiler.py": {
+      "defines": [
+        "sriu.core.compiler.SemanticCompiler",
+        "sriu.core.compiler.__init__",
+        "sriu.core.compiler.get_available_models",
+        "sriu.core.compiler.compile"
+      ],
+      "imports": []
+    },
+    "src/sriu/core/logic.py": {
+      "defines": [
+        "sriu.core.logic.LogicEngine",
+        "sriu.core.logic.verify_proof"
+      ],
+      "imports": []
+    },
+    "src/sriu/core/runtime.py": {
+      "defines": [
+        "sriu.core.runtime.Runtime",
+        "sriu.core.runtime.execute",
+        "sriu.core.runtime._run_shell",
+        "sriu.core.runtime._run_python",
+        "sriu.core.runtime._write_file",
+        "sriu.core.runtime._read_file"
+      ],
+      "imports": []
+    },
+    "src/sriu/core/state.py": {
+      "defines": [
+        "sriu.core.state.ActionType",
+        "sriu.core.state.TaskStatus",
+        "sriu.core.state.ActionArgs",
+        "sriu.core.state.Action",
+        "sriu.core.state.TaskState",
+        "sriu.core.state.log",
+        "sriu.core.state.update_status"
+      ],
+      "imports": []
+    },
+    "src/sriu/core/__init__.py": {
+      "defines": [],
+      "imports": []
+    },
+    "src/sriu/tools/registry_scanner.py": {
+      "defines": [
+        "sriu.tools.registry_scanner.Scanner",
+        "sriu.tools.registry_scanner.__init__",
+        "sriu.tools.registry_scanner._get_module_name",
+        "sriu.tools.registry_scanner._resolve_import",
+        "sriu.tools.registry_scanner.scan",
+        "sriu.tools.registry_scanner._pass1",
+        "sriu.tools.registry_scanner._pass2",
+        "sriu.tools.registry_scanner.save"
+      ],
+      "imports": []
+    },
+    "src/sriu/tools/__init__.py": {
+      "defines": [],
+      "imports": []
+    }
+  },
+  "symbols": {
+    "sriu.console.get_tree_structure": {
+      "type": "function",
       "path": "src/sriu/console.py",
+      "line": 15,
       "desc": "[Keeper] \u751f\u6210\u5f53\u524d\u76ee\u5f55\u6811\u7ed3\u6784 (\u9650\u5236\u6df1\u5ea6\u4ee5\u8282\u7701 Token)",
-      "used_in": []
+      "used_by": []
     },
-    "load_keeper_context": {
+    "sriu.console.load_keeper_context": {
+      "type": "function",
       "path": "src/sriu/console.py",
+      "line": 38,
       "desc": "[Keeper] \u8bfb\u53d6\u9879\u76ee\u7ba1\u7406\u6587\u4ef6\uff0c\u6784\u5efa\u4e0a\u4e0b\u6587",
-      "used_in": []
+      "used_by": []
     },
-    "init_project_files": {
+    "sriu.console.init_project_files": {
+      "type": "function",
       "path": "src/sriu/console.py",
+      "line": 63,
       "desc": "[Keeper] \u521d\u59cb\u5316\u6807\u51c6\u6587\u4ef6",
-      "used_in": []
+      "used_by": []
     },
-    "select_model_interactive": {
+    "sriu.console.select_model_interactive": {
+      "type": "function",
       "path": "src/sriu/console.py",
+      "line": 87,
       "desc": "No description provided.",
-      "used_in": []
+      "used_by": []
     },
-    "main": {
+    "sriu.console.main": {
+      "type": "function",
       "path": "src/sriu/console.py",
+      "line": 112,
       "desc": "No description provided.",
-      "used_in": []
-    },
-    "sriu.main": {
-      "path": "src/sriu/main.py",
-      "desc": "Module sriu.main",
-      "used_in": []
+      "used_by": []
     },
     "sriu.main.main": {
+      "type": "function",
       "path": "src/sriu/main.py",
+      "line": 13,
       "desc": "No description provided.",
-      "used_in": []
+      "used_by": []
     },
-    "sriu": {
-      "path": "src/sriu/__init__.py",
-      "desc": "Module sriu",
-      "used_in": []
-    },
-    "sriu.core.compiler": {
+    "sriu.core.compiler.SemanticCompiler": {
+      "type": "class",
       "path": "src/sriu/core/compiler.py",
-      "desc": "Module sriu.core.compiler",
-      "used_in": []
-    },
-    "SemanticCompiler": {
-      "path": "src/sriu/core/compiler.py",
+      "line": 75,
       "desc": "No description provided.",
-      "used_in": []
+      "used_by": [
+        "src/sriu/console.py",
+        "src/sriu/main.py"
+      ]
     },
-    "sriu.core.logic": {
-      "path": "src/sriu/core/logic.py",
-      "desc": "Module sriu.core.logic",
-      "used_in": []
+    "sriu.core.compiler.__init__": {
+      "type": "function",
+      "path": "src/sriu/core/compiler.py",
+      "line": 76,
+      "desc": "\u521d\u59cb\u5316\u7f16\u8bd1\u5668 - \u4f7f\u7528 Google GenAI SDK (Modern)",
+      "used_by": []
     },
-    "LogicEngine": {
+    "sriu.core.compiler.get_available_models": {
+      "type": "function",
+      "path": "src/sriu/core/compiler.py",
+      "line": 92,
+      "desc": "\u52a8\u6001\u83b7\u53d6\u53ef\u7528\u6a21\u578b\u5217\u8868 (\u4fdd\u6301\u539f\u6709\u903b\u8f91\u4ee5\u652f\u6301 Console \u542f\u52a8)",
+      "used_by": []
+    },
+    "sriu.core.compiler.compile": {
+      "type": "function",
+      "path": "src/sriu/core/compiler.py",
+      "line": 118,
+      "desc": "[Phase 6.2 Update] \u63a5\u6536 project_context (\u6587\u4ef6\u7ed3\u6784+\u6ce8\u518c\u8868\u5185\u5bb9)",
+      "used_by": []
+    },
+    "sriu.core.logic.LogicEngine": {
+      "type": "class",
       "path": "src/sriu/core/logic.py",
+      "line": 6,
       "desc": "Phase 5 Component: Logic Lock (Kaomoji Edition)",
-      "used_in": []
+      "used_by": [
+        "src/sriu/core/runtime.py"
+      ]
     },
-    "sriu.core.runtime": {
-      "path": "src/sriu/core/runtime.py",
-      "desc": "Module sriu.core.runtime",
-      "used_in": []
+    "sriu.core.logic.verify_proof": {
+      "type": "function",
+      "path": "src/sriu/core/logic.py",
+      "line": 12,
+      "desc": "No description provided.",
+      "used_by": []
     },
-    "Runtime": {
+    "sriu.core.runtime.Runtime": {
+      "type": "class",
       "path": "src/sriu/core/runtime.py",
+      "line": 11,
       "desc": "SRIU \u6267\u884c\u5668 - Phase 6: Native File Tools & Strict Schema (Kaomoji Edition)",
-      "used_in": []
+      "used_by": [
+        "src/sriu/console.py",
+        "src/sriu/main.py"
+      ]
     },
-    "sriu.core.state": {
-      "path": "src/sriu/core/state.py",
-      "desc": "Module sriu.core.state",
-      "used_in": []
-    },
-    "ActionType": {
-      "path": "src/sriu/core/state.py",
+    "sriu.core.runtime.execute": {
+      "type": "function",
+      "path": "src/sriu/core/runtime.py",
+      "line": 16,
       "desc": "No description provided.",
-      "used_in": []
+      "used_by": []
     },
-    "TaskStatus": {
-      "path": "src/sriu/core/state.py",
+    "sriu.core.runtime._run_shell": {
+      "type": "function",
+      "path": "src/sriu/core/runtime.py",
+      "line": 92,
       "desc": "No description provided.",
-      "used_in": []
+      "used_by": []
     },
-    "ActionArgs": {
-      "path": "src/sriu/core/state.py",
+    "sriu.core.runtime._run_python": {
+      "type": "function",
+      "path": "src/sriu/core/runtime.py",
+      "line": 106,
       "desc": "No description provided.",
-      "used_in": []
+      "used_by": []
     },
-    "Action": {
-      "path": "src/sriu/core/state.py",
+    "sriu.core.runtime._write_file": {
+      "type": "function",
+      "path": "src/sriu/core/runtime.py",
+      "line": 120,
       "desc": "No description provided.",
-      "used_in": []
+      "used_by": []
     },
-    "TaskState": {
-      "path": "src/sriu/core/state.py",
+    "sriu.core.runtime._read_file": {
+      "type": "function",
+      "path": "src/sriu/core/runtime.py",
+      "line": 130,
       "desc": "No description provided.",
-      "used_in": []
+      "used_by": []
     },
-    "sriu.core": {
-      "path": "src/sriu/core/__init__.py",
-      "desc": "Module sriu.core",
-      "used_in": []
+    "sriu.core.state.ActionType": {
+      "type": "class",
+      "path": "src/sriu/core/state.py",
+      "line": 7,
+      "desc": "No description provided.",
+      "used_by": [
+        "src/sriu/core/compiler.py",
+        "src/sriu/core/runtime.py"
+      ]
     },
-    "sriu.tools": {
-      "path": "src/sriu/tools/__init__.py",
-      "desc": "Module sriu.tools",
-      "used_in": []
+    "sriu.core.state.TaskStatus": {
+      "type": "class",
+      "path": "src/sriu/core/state.py",
+      "line": 14,
+      "desc": "No description provided.",
+      "used_by": [
+        "src/sriu/console.py",
+        "src/sriu/main.py",
+        "src/sriu/core/compiler.py",
+        "src/sriu/core/runtime.py"
+      ]
+    },
+    "sriu.core.state.ActionArgs": {
+      "type": "class",
+      "path": "src/sriu/core/state.py",
+      "line": 24,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.core.state.Action": {
+      "type": "class",
+      "path": "src/sriu/core/state.py",
+      "line": 31,
+      "desc": "No description provided.",
+      "used_by": [
+        "src/sriu/core/compiler.py"
+      ]
+    },
+    "sriu.core.state.TaskState": {
+      "type": "class",
+      "path": "src/sriu/core/state.py",
+      "line": 41,
+      "desc": "No description provided.",
+      "used_by": [
+        "src/sriu/console.py",
+        "src/sriu/core/compiler.py",
+        "src/sriu/core/runtime.py"
+      ]
+    },
+    "sriu.core.state.log": {
+      "type": "function",
+      "path": "src/sriu/core/state.py",
+      "line": 56,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.core.state.update_status": {
+      "type": "function",
+      "path": "src/sriu/core/state.py",
+      "line": 60,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.tools.registry_scanner.Scanner": {
+      "type": "class",
+      "path": "src/sriu/tools/registry_scanner.py",
+      "line": 7,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.tools.registry_scanner.__init__": {
+      "type": "function",
+      "path": "src/sriu/tools/registry_scanner.py",
+      "line": 8,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.tools.registry_scanner._get_module_name": {
+      "type": "function",
+      "path": "src/sriu/tools/registry_scanner.py",
+      "line": 14,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.tools.registry_scanner._resolve_import": {
+      "type": "function",
+      "path": "src/sriu/tools/registry_scanner.py",
+      "line": 21,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.tools.registry_scanner.scan": {
+      "type": "function",
+      "path": "src/sriu/tools/registry_scanner.py",
+      "line": 38,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.tools.registry_scanner._pass1": {
+      "type": "function",
+      "path": "src/sriu/tools/registry_scanner.py",
+      "line": 51,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.tools.registry_scanner._pass2": {
+      "type": "function",
+      "path": "src/sriu/tools/registry_scanner.py",
+      "line": 77,
+      "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.tools.registry_scanner.save": {
+      "type": "function",
+      "path": "src/sriu/tools/registry_scanner.py",
+      "line": 99,
+      "desc": "No description provided.",
+      "used_by": []
     }
   }
 }

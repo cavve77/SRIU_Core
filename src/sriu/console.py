@@ -16,10 +16,10 @@ def get_tree_structure(path=".") -> str:
     """[Keeper] 生成当前目录树结构 (限制深度以节省 Token)"""
     tree_str = "root/\n"
     try:
-        # 只显示16层深度
+        # 只显示 5 层深度 (原 16 层太深，容易消耗过多 Token)
         for root, dirs, files in os.walk(path):
             level = root.replace(path, '').count(os.sep)
-            if level > 16: continue
+            if level > 5: continue
             
             indent = ' ' * 4 * (level)
             folder_name = os.path.basename(root)
@@ -49,13 +49,13 @@ def load_keeper_context() -> str:
                 context += f"--- [global_registry.json] ---\n{f.read()}\n\n"
         except: pass
         
-    # 3. 路线图 (只读取部分，避免过长)
+    # 3. 路线图
     if os.path.exists("project_roadmap.md"):
         try:
             with open("project_roadmap.md", "r", encoding="utf-8") as f:
                 content = f.read()
-                # 截取前 100000 字符
-                context += f"--- [project_roadmap.md (Snippet)] ---\n{content[:100000]}...\n\n"
+                # 截取前 20000 字符 (100k 有点多，保守一点)
+                context += f"--- [project_roadmap.md (Snippet)] ---\n{content[:20000]}...\n\n"
         except: pass
         
     return context
@@ -157,8 +157,15 @@ def main():
 
             # A. Compile (Thinking with Context)
             print(f"( ⚙_⚙ ) Thinking with Context...", end="\r")
+            
             # [Phase 6.2] 传入上下文
             task = compiler.compile(user_input, project_context)
+            
+            # [Phase 7.2] Token Usage Display (Safe Dictionary Access)
+            # 注意: usage 是我们在 compiler.py 中动态注入的 dict，不是 Schema 的一部分
+            if hasattr(task, "usage") and task.usage:
+                # 使用 .get() 确保安全访问，键名与 compiler.py 中定义的一致
+                print(f"\n(o_O) [Token Usage] In: {task.usage.get('prompt_tokens', 0)} | Out: {task.usage.get('completion_tokens', 0)} | Total: {task.usage.get('total_tokens', 0)}")
             
             if task.current_status == "failed":
                 print(f"(×_×#) Compilation Failed: {task.history}")
