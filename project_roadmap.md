@@ -4,6 +4,7 @@
 - [ ] Initialize Project
 
 ## Implemented
+- [x] Phase 8: Gatekeeper (Intent Classification)
 - [x] Phase 7: Symbol Graph (Memory Core)
 - [x] Phase 6: Native File Tools & Strict Schema (v0.6.2)
 

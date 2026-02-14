@@ -1,7 +1,7 @@
 {
   "meta": {
     "project": "SRIU_Project",
-    "updated_at": "2026-02-15T01:49:36.475258",
+    "updated_at": "2026-02-15T02:55:38.901249",
     "version": "0.7.0"
   },
   "files": {
@@ -10,8 +10,9 @@
         "sriu.console.get_tree_structure",
         "sriu.console.load_keeper_context",
         "sriu.console.init_project_files",
-        "sriu.console.select_model_interactive",
-        "sriu.console.main"
+        "sriu.console.main",
+        "sriu.console.Gatekeeper",
+        "sriu.console.select_model"
       ],
       "imports": []
     },
@@ -106,13 +107,6 @@
       "path": "src/sriu/console.py",
       "line": 63,
       "desc": "[Keeper] \u521d\u59cb\u5316\u6807\u51c6\u6587\u4ef6",
-      "used_by": []
-    },
-    "sriu.console.select_model_interactive": {
-      "type": "function",
-      "path": "src/sriu/console.py",
-      "line": 87,
-      "desc": "No description provided.",
       "used_by": []
     },
     "sriu.console.main": {
@@ -338,6 +332,22 @@
       "path": "src/sriu/tools/registry_scanner.py",
       "line": 99,
       "desc": "No description provided.",
+      "used_by": []
+    },
+    "sriu.console.Gatekeeper": {
+      "type": "class",
+      "path": "src/sriu/console.py",
+      "line": 0,
+      "desc": "AI Gatekeeper with configurable model_id support",
+      "used_by": [
+        "src/sriu/console.py"
+      ]
+    },
+    "sriu.console.select_model": {
+      "type": "function",
+      "path": "src/sriu/console.py",
+      "line": 85,
+      "desc": "Generic model selection function for Logic Core and Gatekeeper",
       "used_by": []
     }
   }
