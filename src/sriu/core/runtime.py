@@ -2,6 +2,8 @@
 import subprocess
 import sys
 import os
+import shutil
+import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -10,8 +12,15 @@ from .logic import LogicEngine
 
 class Runtime:
     """
-    SRIU 执行器 - Phase 6: Native File Tools & Strict Schema (Kaomoji Edition)
+    SRIU 执行器 - Phase 8.2: Time Machine Enabled (Kaomoji Edition)
+    Capabilities: Native File Tools, Strict Schema, Logic Lock, Auto-Backup.
     """
+
+    def __init__(self):
+        # [Phase 8.2] Time Machine Initialization
+        # Generate a unique session ID based on startup time for backup isolation
+        self.session_id = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        self.backup_root = Path(".sriu/backups") / self.session_id
 
     def execute(self, task: TaskState) -> TaskState:
         print("\n" + "="*50)
@@ -117,13 +126,41 @@ class Runtime:
         except subprocess.CalledProcessError as e:
             return f"Python Execution Error: {e.stderr.strip()}"
 
+    def _engage_time_machine(self, target_path: Path) -> str:
+        """
+        [Phase 8.2] Backs up the file before modification.
+        """
+        if not target_path.exists():
+            return "" # New file, no backup needed
+
+        try:
+            # Ensure backup root exists
+            if not self.backup_root.exists():
+                self.backup_root.mkdir(parents=True, exist_ok=True)
+            
+            # Create timestamped filename: HHMMSS_filename
+            timestamp = datetime.datetime.now().strftime("%H%M%S")
+            backup_name = f"{timestamp}_{target_path.name}"
+            backup_path = self.backup_root / backup_name
+            
+            shutil.copy2(target_path, backup_path)
+            return f" [Backup: {backup_name}]"
+        except Exception as e:
+            print(f"(T_T) Time Machine Warning: Backup failed - {e}")
+            return " [Backup Failed]"
+
     def _write_file(self, path: str, content: str) -> str:
         try:
             p = Path(path)
+            
+            # [Phase 8.2] Trigger Time Machine
+            backup_msg = self._engage_time_machine(p)
+            
             p.parent.mkdir(parents=True, exist_ok=True)
             with open(p, "w", encoding="utf-8") as f:
                 f.write(content)
-            return f"(b^_^)b File written: {p.absolute()}"
+            
+            return f"(b^_^)b File written{backup_msg}: {p.absolute()}"
         except Exception as e:
             return f"(x_x) Write failed: {str(e)}"
 

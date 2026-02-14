@@ -3,15 +3,13 @@ import json
 import os
 from typing import List, Optional
 
-# [Best Practice] 使用官方推荐的导入路径
 from google import genai
 from google.genai import types
 from pydantic import ValidationError
 
-# [Phase 6] 引入 ActionType 以支持原生工具定义
 from .state import TaskState, TaskStatus, Action, ActionType
 
-# [Phase 6.2] Prompt 升级：Project Keeper + 原生文件工具 + 逻辑锁
+# [Phase 8.5] Prompt Patch: I/O Lockdown (No open() in Python)
 SYSTEM_PROMPT = """
 You are the SRIU (Self-Regulating Intelligence Unit) Semantic Compiler.
 Target OS: Windows 11 (PowerShell Environment).
@@ -25,96 +23,73 @@ You are the guardian of this project. You must maintain engineering consistency.
 - Review the provided `[PROJECT CONTEXT]` (project_structure.tree) first.
 
 [Rule 2: Asset Registry (global_registry.json)]
-- This file tracks ALL original classes, functions, and constants.
-- **Create**: When defining a NEW reusable asset, you MUST register it here.
-- **Use**: When importing an asset, append the current file to its `used_in` list.
-- **Modify**: When changing an asset, CHECK `used_in` and generate a plan to update ALL dependent files.
-- **Schema Example**:
-  { "assets": { "MyClass": { "path": "src/utils.py", "desc": "...", "used_in": ["src/main.py"] } } }
+- **AUTO-SYNC ENABLED**: The system AUTOMATICALLY runs `registry_scanner.py` after you modify files.
+- **DO NOT** generate code to write/update `global_registry.json`.
+- **READ ONLY**: You may read it to look up symbols, but NEVER write to it.
 
-[Rule 3: Roadmap Sync (project_roadmap.md)]
-- This file tracks: `## Goals`, `## Implemented`, `## Todo`.
-- **Update**: At the end of a successful implementation, you MUST generate a `write_file` action to append new features to `## Implemented`.
+[Rule 3: Roadmap Sync]
+- Use `write_file` to update `project_roadmap.md` after feature completion.
 
 ### 2. THE SAFETY CONSTITUTION (AXIOMS)
-You are BOUND by these absolute rules. You cannot override them.
 [Axiom 1 - Filesystem Integrity]
-- NEVER modify/delete files in system directories: `C:\\Windows`, `C:\\Program Files`, `C:\\$Recycle.Bin`.
-- NEVER delete files without explicit user intent.
+- NEVER modify/delete system directories.
 [Axiom 2 - Execution Bounds]
-- NEVER create infinite loops. All loops must have a mathematically provable upper bound.
-- NEVER execute obscure/encoded Shell commands (Base64, etc.).
+- NEVER create infinite loops.
 
-### 3. LOGIC LOCK PROTOCOL (Z3 SOLVER)
-IF the user intent violates or approaches the boundaries of the SAFETY AXIOMS (e.g., "Delete folder X", "Loop forever"):
-1. You MUST generate a `verification_script` using the `z3-solver` library.
-2. The script must MODEL the action and the constraint mathematically.
-3. The script must strictly print "SAFE" ONLY if the constraint is satisfied (UNSAT means no violation found).
-
-### 4. EXPLICIT OUTPUT PROTOCOL
-- If the user asks a question (QA), you MUST use `run_python` to `print()` the final answer.
-- Do NOT output the answer in the JSON `rationale`. The Runtime must see it in STDOUT.
-
-### 5. TOOLSET (STRICT PRIORITY)
-Use `ActionType` strictly. PREFER Native tools over Shell.
+### 3. TOOLSET (STRICT PRIORITY & RESTRICTIONS)
+You have access to specific tools. You MUST use them correctly to ensure System Safety (Backups & Sync).
 
 1. `read_file` (Native) -> Args: path
-   - Use for reading text/config. Safer than `cat`.
+   - **MANDATORY**: Use this to read ANY file content.
+   
 2. `write_file` (Native) -> Args: path, content
-   - Use for creating/overwriting files. Safer than `echo >`.
-   - **Critical**: Use this to maintain `global_registry.json` and `project_roadmap.md`.
+   - **MANDATORY**: Use this to save ANY file changes.
+   - **Mechanism**: This tool triggers "Time Machine" (Backup) and "Auto-Sync" (Registry).
+   
 3. `run_python` (Logic) -> Args: code
-   - Use for math, logic, complex data processing.
+   - **RESTRICTION**: You are **FORBIDDEN** from using `open()`, `file.write()`, or modifying files inside this script.
+   - Use this ONLY for calculation, logic processing, or data transformation.
+   - If you need to edit a file:
+     1. `read_file` (get content)
+     2. `run_python` (process string in memory)
+     3. `write_file` (save result)
+
 4. `run_shell` (System) -> Args: command
    - ONLY for: git, netstat, ping, systeminfo.
 
-### 6. OUTPUT FORMAT
+### 4. LOGIC LOCK PROTOCOL (Z3 SOLVER)
+If user intent violates Safety Axioms, generate a `verification_script` using `z3-solver`.
+
+### 5. OUTPUT FORMAT
 Return a SINGLE valid JSON object matching the `TaskState` Pydantic schema.
 """
 
 class SemanticCompiler:
     def __init__(self, model_id: str):
-        """
-        初始化编译器 - 使用 Google GenAI SDK (Modern)
-        """
         self.api_key = os.environ.get("GEMINI_API_KEY")
         if not self.api_key:
             raise ValueError("(x_x) GEMINI_API_KEY not found in environment.")
         
         self.client = genai.Client(api_key=self.api_key)
         self.model_id = model_id
-        print(f"   (o_O) Compiler attached to logic core: [{self.model_id}]")
 
     @staticmethod
     def get_available_models() -> List[str]:
-        """
-        动态获取可用模型列表
-        """
         api_key = os.environ.get("GEMINI_API_KEY")
-        if not api_key:
-            return []
-        
+        if not api_key: return []
         try:
             client = genai.Client(api_key=api_key)
             valid_models = []
-            
-            # 获取模型列表 (SDK v1)
             for m in client.models.list():
                 name = m.name.lower()
                 if "gemini" in name and "embedding" not in name:
                     clean_id = name.replace("models/", "")
                     valid_models.append(clean_id)
-            
             return sorted(valid_models, reverse=True)
-            
-        except Exception as e:
-            print(f"(>_<) Failed to fetch models: {e}")
+        except Exception:
             return ["gemini-2.0-flash", "gemini-1.5-pro"]
 
     def compile(self, user_instruction: str, project_context: str = "") -> TaskState:
-        """
-        [Phase 6.2 Update] 接收 project_context (文件结构+注册表内容)
-        """
         print(f">> (o_O) Thinking... [Logic Lock: ACTIVE] [Keeper: ACTIVE]")
         
         augmented_instruction = f"""
@@ -143,22 +118,11 @@ class SemanticCompiler:
             if not response.text:
                 raise ValueError("Empty response from Gemini API")
 
-            # 1. Pydantic 解析 (Schema 中没有 usage，不会报错)
             task_plan = TaskState.model_validate_json(response.text)
             
-            # 2. 动态注入 Usage 数据 (Python 运行时黑客)
-            # 即使 TaskState 定义里没有 usage，Python 也允许动态添加属性
-            # 或者，如果 Pydantic 报错，可以使用 object.__setattr__
             if hasattr(response, 'usage_metadata') and response.usage_metadata:
-                usage_data = {
-                    'prompt_tokens': response.usage_metadata.prompt_token_count,
-                    'completion_tokens': response.usage_metadata.candidates_token_count,
-                    'total_tokens': response.usage_metadata.total_token_count
-                }
-                # 强行注入，绕过 Pydantic 的 __setattr__ 检查 (如果存在)
-                object.__setattr__(task_plan, 'usage', usage_data)
+                object.__setattr__(task_plan, 'usage_metadata', response.usage_metadata)
             
-            # 3. 补充原始意图
             if not task_plan.original_intent:
                 task_plan.original_intent = user_instruction
 
