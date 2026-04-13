@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Portrait Pit</title>
+    <meta
+      name="description"
+      content="上传两张人像，生成两位斗士，在浏览器里观看一场自动决斗。"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">H5 Auto Battle</p>
+          <h1>Portrait Pit</h1>
+          <p class="hero-text">
+            上传两张人像，系统会根据图像特征和生成时的时间戳，把他们塑造成两名风格迥异的斗士。
+            开战后他们会自动厮杀，断肢会加重失血，直到一方彻底倒下。
+          </p>
+          <div class="hero-chips">
+            <span>本地处理照片</span>
+            <span>无后端</span>
+            <span>可生成分享海报</span>
+          </div>
+        </div>
+        <aside class="share-banner" id="shareBanner" hidden>
+          <p class="eyebrow">战报链接</p>
+          <div id="shareBannerContent"></div>
+        </aside>
+      </header>
+
+      <main class="main-grid">
+        <section class="control-column">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Fighter Forge</p>
+              <h2>生成斗士</h2>
+            </div>
+            <button class="ghost-button" id="resetRosterButton" type="button">
+              清空斗士
+            </button>
+          </div>
+
+          <div class="fighter-grid">
+            <article class="fighter-card" data-slot="A">
+              <div class="slot-topline">
+                <div>
+                  <p class="eyebrow">斗士A</p>
+                  <h3 id="nameA">等待上传</h3>
+                </div>
+                <button
+                  class="secondary-button regen-button"
+                  id="regenA"
+                  data-slot="A"
+                  type="button"
+                  disabled
+                >
+                  重铸
+                </button>
+              </div>
+
+              <label class="upload-tile" for="uploadA">
+                <input
+                  id="uploadA"
+                  type="file"
+                  accept="image/*"
+                  class="sr-only"
+                />
+                <span class="upload-title">上传人像照片</span>
+                <span class="upload-subtitle">
+                  建议使用正面或半身照，图片只在本机浏览器处理
+                </span>
+              </label>
+
+              <div class="portrait-card empty" id="portraitWrapA">
+                <img id="portraitA" alt="斗士A 预览" hidden />
+                <div class="portrait-placeholder" id="placeholderA">
+                  Portrait A
+                </div>
+              </div>
+
+              <div class="meta-block" id="metaA">
+                <p class="hint">尚未生成斗士。</p>
+              </div>
+            </article>
+
+            <article class="fighter-card" data-slot="B">
+              <div class="slot-topline">
+                <div>
+                  <p class="eyebrow">斗士B</p>
+                  <h3 id="nameB">等待上传</h3>
+                </div>
+                <button
+                  class="secondary-button regen-button"
+                  id="regenB"
+                  data-slot="B"
+                  type="button"
+                  disabled
+                >
+                  重铸
+                </button>
+              </div>
+
+              <label class="upload-tile" for="uploadB">
+                <input
+                  id="uploadB"
+                  type="file"
+                  accept="image/*"
+                  class="sr-only"
+                />
+                <span class="upload-title">上传人像照片</span>
+                <span class="upload-subtitle">
+                  斗士体格与招式将被照片特征和时间戳共同塑形
+                </span>
+              </label>
+
+              <div class="portrait-card empty" id="portraitWrapB">
+                <img id="portraitB" alt="斗士B 预览" hidden />
+                <div class="portrait-placeholder" id="placeholderB">
+                  Portrait B
+                </div>
+              </div>
+
+              <div class="meta-block" id="metaB">
+                <p class="hint">尚未生成斗士。</p>
+              </div>
+            </article>
+          </div>
+
+          <section class="action-panel">
+            <div class="action-copy">
+              <p class="eyebrow">Ready Room</p>
+              <h2>战斗流程</h2>
+              <p id="statusText">
+                先为两侧都上传照片并完成生成，然后点击 Play。
+              </p>
+            </div>
+            <div class="action-buttons">
+              <button class="primary-button" id="playButton" type="button" disabled>
+                Play
+              </button>
+              <button class="secondary-button" id="restartBattleButton" type="button" disabled>
+                再来一轮
+              </button>
+            </div>
+          </section>
+
+          <section class="event-panel">
+            <div class="panel-heading small">
+              <div>
+                <p class="eyebrow">Combat Feed</p>
+                <h2>战斗播报</h2>
+              </div>
+            </div>
+            <ul class="combat-feed" id="combatFeed">
+              <li>等待斗士登场。</li>
+            </ul>
+          </section>
+
+          <section class="result-panel" id="resultPanel" hidden>
+            <div>
+              <p class="eyebrow">Finish</p>
+              <h2 id="resultTitle">胜负已分</h2>
+              <p id="resultSummary"></p>
+            </div>
+            <div class="result-actions">
+              <button class="primary-button" id="shareButton" type="button">
+                分享海报
+              </button>
+              <button class="secondary-button" id="copyLinkButton" type="button">
+                复制链接
+              </button>
+              <button class="ghost-button" id="backToLobbyButton" type="button">
+                返回主界面
+              </button>
+            </div>
+          </section>
+        </section>
+
+        <section class="arena-column">
+          <div class="arena-head">
+            <div class="hud-card">
+              <p class="eyebrow">斗士A</p>
+              <div class="hud-row">
+                <strong id="hudNameA">未就绪</strong>
+                <span id="hudStateA">待机</span>
+              </div>
+              <div class="health-bar">
+                <div class="health-fill" id="healthFillA"></div>
+              </div>
+              <div class="hud-metrics">
+                <span id="hudHealthA">HP 0</span>
+                <span id="hudBleedA">流血 0.0/s</span>
+              </div>
+            </div>
+
+            <div class="center-hud">
+              <p class="eyebrow">Arena Clock</p>
+              <h2 id="clockDisplay">00.0s</h2>
+              <p id="roundState">等待斗士生成</p>
+            </div>
+
+            <div class="hud-card align-right">
+              <p class="eyebrow">斗士B</p>
+              <div class="hud-row">
+                <strong id="hudNameB">未就绪</strong>
+                <span id="hudStateB">待机</span>
+              </div>
+              <div class="health-bar reverse">
+                <div class="health-fill" id="healthFillB"></div>
+              </div>
+              <div class="hud-metrics">
+                <span id="hudHealthB">HP 0</span>
+                <span id="hudBleedB">流血 0.0/s</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="arena-stage">
+            <canvas id="arenaCanvas" width="1280" height="720"></canvas>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog class="poster-dialog" id="posterDialog">
+      <form method="dialog" class="poster-sheet">
+        <div class="panel-heading small">
+          <div>
+            <p class="eyebrow">Share Poster</p>
+            <h2>战报海报</h2>
+          </div>
+          <button class="ghost-button" type="submit">关闭</button>
+        </div>
+        <img id="posterPreview" alt="分享海报预览" />
+        <div class="poster-actions">
+          <a class="primary-button link-button" id="downloadPosterLink" download="portrait-pit-poster.png">
+            下载海报
+          </a>
+          <button class="secondary-button" id="shareNativeButton" type="button">
+            系统分享
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
