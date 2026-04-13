@@ -482,20 +482,56 @@ function limbPoints(origin, upperLen, lowerLen, upperAngle, lowerAngle) {
 
 function drawLeg(ctx, fighter, pose, limbKey, palette, front) {
   const limb = pose.joints[limbKey];
-  const tone = front ? palette.armor : palette.armorShadow;
-  drawSegment(ctx, limb.origin, limb.joint, 22, 16, tone, palette.joint);
-  drawSegment(ctx, limb.joint, limb.end, 18, 12, palette.strap, palette.joint);
-  drawBoot(ctx, limb.end, fighter.facing, pose.dims.foot, palette);
+  const thighBase = front ? palette.armor : palette.armorShadow;
+  const shinBase = front ? palette.strap : palette.armorShadow;
+  drawOrganicLimb(ctx, limb.origin, limb.joint, {
+    startRadius: 23,
+    endRadius: 18,
+    bulge: 1.18,
+    fillA: thighBase,
+    fillB: palette.armorShadow,
+    highlight: "rgba(255,255,255,0.12)",
+  });
+  drawJointCap(ctx, limb.joint, 12.5, palette.joint, "rgba(255,255,255,0.12)");
+  drawOrganicLimb(ctx, limb.joint, limb.end, {
+    startRadius: 17,
+    endRadius: 10,
+    bulge: 1.14,
+    fillA: shinBase,
+    fillB: palette.strap,
+    highlight: "rgba(255,255,255,0.08)",
+  });
+  drawBoot(ctx, limb.joint, limb.end, fighter.facing, pose.dims.foot, palette);
 }
 
 function drawArm(ctx, fighter, pose, limbKey, palette, front) {
   const limb = pose.joints[limbKey];
-  const tone = front ? palette.accent : palette.armorShadow;
-  drawSegment(ctx, limb.origin, limb.joint, 18, 13, tone, palette.joint);
-  drawSegment(ctx, limb.joint, limb.end, 14, 10, palette.strap, palette.joint);
-  ctx.fillStyle = front ? palette.metal : palette.joint;
+  const upperBase = front ? palette.accent : palette.armorShadow;
+  const foreBase = front ? palette.skin : palette.skinShadow;
+  drawOrganicLimb(ctx, limb.origin, limb.joint, {
+    startRadius: 17,
+    endRadius: 14,
+    bulge: 1.16,
+    fillA: upperBase,
+    fillB: palette.armorShadow,
+    highlight: "rgba(255,255,255,0.1)",
+  });
+  drawJointCap(ctx, limb.joint, 10.5, palette.skinShadow, "rgba(255,255,255,0.1)");
+  drawOrganicLimb(ctx, limb.joint, limb.end, {
+    startRadius: 13.5,
+    endRadius: 9,
+    bulge: 1.2,
+    fillA: foreBase,
+    fillB: palette.skinShadow,
+    highlight: "rgba(255,255,255,0.12)",
+  });
+  ctx.fillStyle = front ? palette.skin : palette.skinShadow;
   ctx.beginPath();
   ctx.arc(limb.end.x, limb.end.y, fighter.roster.dimensions.hand, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.08)";
+  ctx.beginPath();
+  ctx.arc(limb.end.x - fighter.facing * 2, limb.end.y - 2, fighter.roster.dimensions.hand * 0.48, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -512,11 +548,10 @@ function drawTorso(ctx, fighter, pose, palette) {
   ctx.save();
   ctx.beginPath();
   ctx.moveTo(topLeft.x, topLeft.y);
-  ctx.lineTo(topRight.x, topRight.y);
-  ctx.lineTo(midRight.x, midRight.y);
-  ctx.lineTo(waistRight.x, waistRight.y);
-  ctx.lineTo(waistLeft.x, waistLeft.y);
-  ctx.lineTo(midLeft.x, midLeft.y);
+  ctx.quadraticCurveTo(shoulderCenter.x, shoulderCenter.y - 12, topRight.x, topRight.y);
+  ctx.quadraticCurveTo(midRight.x + direction * 18, shoulderCenter.y + dims.torsoHeight * 0.36, waistRight.x, waistRight.y);
+  ctx.quadraticCurveTo(hipCenter.x, hipCenter.y + 12, waistLeft.x, waistLeft.y);
+  ctx.quadraticCurveTo(midLeft.x - direction * 18, shoulderCenter.y + dims.torsoHeight * 0.36, topLeft.x, topLeft.y);
   ctx.closePath();
   const fill = ctx.createLinearGradient(topLeft.x, topLeft.y, waistRight.x, waistRight.y);
   fill.addColorStop(0, palette.armor);
@@ -527,12 +562,24 @@ function drawTorso(ctx, fighter, pose, palette) {
   ctx.strokeStyle = "rgba(255, 255, 255, 0.18)";
   ctx.stroke();
 
+  ctx.fillStyle = palette.skinShadow;
+  ctx.fillRect(shoulderCenter.x - 8, shoulderCenter.y - 2, 16, dims.neck + 10);
   ctx.fillStyle = "rgba(255, 255, 255, 0.12)";
-  ctx.fillRect(shoulderCenter.x - 8, shoulderCenter.y + 8, 16, dims.torsoHeight * 0.66);
+  ctx.beginPath();
+  ctx.ellipse(shoulderCenter.x, shoulderCenter.y + dims.torsoHeight * 0.26, 16, dims.torsoHeight * 0.26, 0, 0, Math.PI * 2);
+  ctx.fill();
   ctx.fillStyle = palette.accent;
-  ctx.fillRect(shoulderCenter.x + direction * 6 - 18, shoulderCenter.y + 18, 36, dims.torsoHeight * 0.42);
+  ctx.beginPath();
+  ctx.moveTo(shoulderCenter.x + direction * 6 - 18, shoulderCenter.y + 18);
+  ctx.lineTo(shoulderCenter.x + direction * 34, shoulderCenter.y + 30);
+  ctx.lineTo(shoulderCenter.x + direction * 24, shoulderCenter.y + dims.torsoHeight * 0.64);
+  ctx.lineTo(shoulderCenter.x + direction * 6 - 18, shoulderCenter.y + dims.torsoHeight * 0.48);
+  ctx.closePath();
+  ctx.fill();
   ctx.fillStyle = palette.strap;
-  ctx.fillRect(hipCenter.x - dims.waistWidth * 0.72, hipCenter.y - 12, dims.waistWidth * 1.44, 20);
+  ctx.fillRect(hipCenter.x - dims.waistWidth * 0.78, hipCenter.y - 12, dims.waistWidth * 1.56, 20);
+  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  ctx.fillRect(hipCenter.x - 10, hipCenter.y - 10, 20, 16);
   ctx.restore();
 }
 
@@ -541,9 +588,16 @@ function drawHead(ctx, fighter, pose, palette) {
   const headTilt = fighter.dead ? pose.torsoTilt * 0.8 : fighter.guardTime > 0 ? -fighter.facing * 0.08 : fighter.facing * 0.04;
 
   ctx.save();
+  ctx.translate(headCenter.x, headCenter.y + dims.headH * 0.34);
+  ctx.rotate(headTilt);
+  ctx.fillStyle = palette.skinShadow;
+  ctx.fillRect(-dims.headW * 0.12, 0, dims.headW * 0.24, dims.neck + 8);
+  ctx.restore();
+
+  ctx.save();
   ctx.translate(headCenter.x, headCenter.y);
   ctx.rotate(headTilt);
-  ctx.fillStyle = "rgba(10, 14, 24, 0.9)";
+  ctx.fillStyle = palette.skinShadow;
   ctx.beginPath();
   ctx.ellipse(0, 0, dims.headW * 0.54, dims.headH * 0.62, 0, 0, Math.PI * 2);
   ctx.fill();
@@ -671,7 +725,7 @@ function drawStumps(ctx, fighter, pose, palette) {
 function drawStump(ctx, point, palette) {
   ctx.fillStyle = palette.blood;
   ctx.beginPath();
-  ctx.arc(point.x, point.y, 10, 0, Math.PI * 2);
+  ctx.ellipse(point.x, point.y, 12, 9, Math.PI / 7, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = "rgba(255,255,255,0.18)";
   ctx.beginPath();
@@ -709,33 +763,73 @@ function drawParticle(ctx, particle) {
   ctx.restore();
 }
 
-function drawSegment(ctx, from, to, startWidth, endWidth, fill, jointFill) {
+function drawOrganicLimb(ctx, from, to, options) {
+  const {
+    startRadius,
+    endRadius,
+    bulge,
+    fillA,
+    fillB,
+    highlight = "rgba(255,255,255,0.1)",
+  } = options;
   const angle = Math.atan2(to.y - from.y, to.x - from.x);
   const normal = { x: Math.cos(angle + Math.PI / 2), y: Math.sin(angle + Math.PI / 2) };
+  const mid = { x: (from.x + to.x) / 2, y: (from.y + to.y) / 2 };
+  const swell = Math.max(startRadius, endRadius) * bulge;
 
   ctx.beginPath();
-  ctx.moveTo(from.x + normal.x * startWidth, from.y + normal.y * startWidth);
-  ctx.lineTo(to.x + normal.x * endWidth, to.y + normal.y * endWidth);
-  ctx.lineTo(to.x - normal.x * endWidth, to.y - normal.y * endWidth);
-  ctx.lineTo(from.x - normal.x * startWidth, from.y - normal.y * startWidth);
+  ctx.moveTo(from.x + normal.x * startRadius, from.y + normal.y * startRadius);
+  ctx.quadraticCurveTo(mid.x + normal.x * swell, mid.y + normal.y * swell, to.x + normal.x * endRadius, to.y + normal.y * endRadius);
+  ctx.quadraticCurveTo(to.x + normal.x * endRadius * 0.4 - normal.y * 2, to.y + normal.y * endRadius * 0.4 + normal.x * 2, to.x - normal.x * endRadius, to.y - normal.y * endRadius);
+  ctx.quadraticCurveTo(mid.x - normal.x * swell, mid.y - normal.y * swell, from.x - normal.x * startRadius, from.y - normal.y * startRadius);
+  ctx.quadraticCurveTo(from.x - normal.x * startRadius * 0.4 + normal.y * 2, from.y - normal.y * startRadius * 0.4 - normal.x * 2, from.x + normal.x * startRadius, from.y + normal.y * startRadius);
   ctx.closePath();
+  const fill = ctx.createLinearGradient(from.x, from.y, to.x, to.y);
+  fill.addColorStop(0, fillA);
+  fill.addColorStop(1, fillB);
   ctx.fillStyle = fill;
   ctx.fill();
+  ctx.lineWidth = 1.4;
+  ctx.strokeStyle = "rgba(8, 10, 18, 0.26)";
+  ctx.stroke();
 
-  ctx.fillStyle = jointFill;
   ctx.beginPath();
-  ctx.arc(from.x, from.y, Math.max(6, startWidth * 0.56), 0, Math.PI * 2);
-  ctx.arc(to.x, to.y, Math.max(6, endWidth * 0.66), 0, Math.PI * 2);
+  ctx.moveTo(from.x + normal.x * startRadius * 0.2, from.y + normal.y * startRadius * 0.2);
+  ctx.quadraticCurveTo(mid.x + normal.x * swell * 0.34, mid.y + normal.y * swell * 0.34, to.x + normal.x * endRadius * 0.12, to.y + normal.y * endRadius * 0.12);
+  ctx.strokeStyle = highlight;
+  ctx.lineWidth = Math.max(2, Math.min(startRadius, endRadius) * 0.22);
+  ctx.stroke();
+}
+
+function drawJointCap(ctx, point, radius, fill, highlight) {
+  ctx.fillStyle = fill;
+  ctx.beginPath();
+  ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = highlight;
+  ctx.beginPath();
+  ctx.arc(point.x - radius * 0.18, point.y - radius * 0.18, radius * 0.44, 0, Math.PI * 2);
   ctx.fill();
 }
 
-function drawBoot(ctx, foot, facing, footSize, palette) {
+function drawBoot(ctx, ankle, foot, facing, footSize, palette) {
+  const angle = Math.atan2(foot.y - ankle.y, foot.x - ankle.x);
   ctx.save();
   ctx.translate(foot.x, foot.y);
+  ctx.rotate(angle * 0.16);
   ctx.fillStyle = palette.boot;
-  ctx.fillRect(-footSize * 0.36, -8, footSize * 1.12, 16);
+  ctx.beginPath();
+  ctx.moveTo(-footSize * 0.42, -10);
+  ctx.lineTo(footSize * 0.48, -10);
+  ctx.lineTo(footSize * 0.72, 0);
+  ctx.lineTo(footSize * 0.56, 12);
+  ctx.lineTo(-footSize * 0.34, 12);
+  ctx.closePath();
+  ctx.fill();
   ctx.fillStyle = "rgba(255,255,255,0.14)";
-  ctx.fillRect(facing > 0 ? 0 : -footSize * 0.34, -6, footSize * 0.42, 4);
+  ctx.fillRect(facing > 0 ? 0 : -footSize * 0.3, -6, footSize * 0.38, 4);
+  ctx.fillStyle = palette.strap;
+  ctx.fillRect(-footSize * 0.24, -12, footSize * 0.4, 6);
   ctx.restore();
 }
 

@@ -1050,6 +1050,9 @@ function derivePalette(features, rand) {
   const hue = (features.avgHue * 360 + rand() * 40 + 360) % 360;
   const accentHue = (hue + 142 + rand() * 32) % 360;
   const strapHue = (hue + 48 + rand() * 20) % 360;
+  const skinHue = clamp(18 + features.warmth * 18 + (features.brightness - 0.5) * 8 + rand() * 4, 8, 42);
+  const skinSat = clamp(36 + features.saturation * 18 + rand() * 6, 28, 64);
+  const skinLight = clamp(48 + features.brightness * 24 - features.contrast * 10 + rand() * 4, 32, 74);
   return {
     armor: `hsl(${hue.toFixed(0)} 54% ${clamp(34 + features.brightness * 18, 28, 56).toFixed(0)}%)`,
     armorShadow: `hsl(${hue.toFixed(0)} 48% ${clamp(20 + features.brightness * 10, 16, 38).toFixed(0)}%)`,
@@ -1059,6 +1062,9 @@ function derivePalette(features, rand) {
     boot: "hsl(220 18% 13%)",
     metal: "hsl(200 10% 74%)",
     blood: "hsl(352 88% 54%)",
+    skin: `hsl(${skinHue.toFixed(0)} ${skinSat.toFixed(0)}% ${skinLight.toFixed(0)}%)`,
+    skinShadow: `hsl(${skinHue.toFixed(0)} ${clamp(skinSat - 4, 24, 60).toFixed(0)}% ${clamp(skinLight - 16, 18, 58).toFixed(0)}%)`,
+    skinHighlight: `hsl(${skinHue.toFixed(0)} ${clamp(skinSat - 12, 18, 54).toFixed(0)}% ${clamp(skinLight + 10, 44, 84).toFixed(0)}%)`,
   };
 }
 

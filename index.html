@@ -187,6 +187,109 @@
             </div>
           </section>
 
+          <section class="mobile-command-panel" id="mobileCommandPanel">
+            <div class="mobile-status-block">
+              <div>
+                <p class="eyebrow">Mobile Deck</p>
+                <h2 id="mobileStatusTitle">准备中</h2>
+              </div>
+              <p id="mobileStatusText">
+                先上传两侧人像并圈脸，移动端会把战斗和控制都压进同一屏。
+              </p>
+            </div>
+
+            <div class="mobile-roster-strip">
+              <article class="mobile-slot-card" data-slot="A">
+                <div class="mobile-slot-top">
+                  <span class="status-pill">斗士A</span>
+                  <label class="ghost-button mobile-upload-button" for="uploadA" id="mobileUploadA">
+                    上传
+                  </label>
+                </div>
+                <div class="mobile-slot-body">
+                  <img id="mobileFaceA" alt="斗士A 脸部预览" hidden />
+                  <div class="mobile-slot-copy">
+                    <strong id="mobileNameA">等待上传</strong>
+                    <span id="mobileMetaA">未导入照片</span>
+                  </div>
+                </div>
+                <div class="mobile-slot-actions">
+                  <button class="ghost-button" id="mobileFaceButtonA" type="button" disabled>
+                    圈脸
+                  </button>
+                  <button class="secondary-button" id="mobileRegenButtonA" type="button" disabled>
+                    重铸
+                  </button>
+                </div>
+              </article>
+
+              <article class="mobile-slot-card" data-slot="B">
+                <div class="mobile-slot-top">
+                  <span class="status-pill">斗士B</span>
+                  <label class="ghost-button mobile-upload-button" for="uploadB" id="mobileUploadB">
+                    上传
+                  </label>
+                </div>
+                <div class="mobile-slot-body">
+                  <img id="mobileFaceB" alt="斗士B 脸部预览" hidden />
+                  <div class="mobile-slot-copy">
+                    <strong id="mobileNameB">等待上传</strong>
+                    <span id="mobileMetaB">未导入照片</span>
+                  </div>
+                </div>
+                <div class="mobile-slot-actions">
+                  <button class="ghost-button" id="mobileFaceButtonB" type="button" disabled>
+                    圈脸
+                  </button>
+                  <button class="secondary-button" id="mobileRegenButtonB" type="button" disabled>
+                    重铸
+                  </button>
+                </div>
+              </article>
+            </div>
+
+            <div class="mobile-primary-actions">
+              <button class="primary-button" id="mobilePlayButton" type="button" disabled>
+                Play
+              </button>
+              <button class="secondary-button" id="mobileRestartButton" type="button" disabled>
+                再来一轮
+              </button>
+            </div>
+
+            <div class="mobile-secondary-actions">
+              <button class="ghost-button" id="mobileRosterDialogButton" type="button">
+                斗士详情
+              </button>
+              <button class="ghost-button" id="mobileLogDialogButton" type="button">
+                战报
+              </button>
+              <button class="ghost-button" id="mobileResetButton" type="button">
+                重置
+              </button>
+            </div>
+
+            <div class="mobile-summary-card">
+              <p class="eyebrow">Live Summary</p>
+              <h3 id="mobileResultTitle">等待开战</h3>
+              <p id="mobileResultText">
+                上传并圈出两张脸后即可进入自动战斗。完整斗士信息和播报可从下方按钮打开。
+              </p>
+              <p class="mobile-quick-log" id="mobileQuickLog">等待斗士登场。</p>
+              <div class="mobile-share-actions" id="mobileShareActions" hidden>
+                <button class="primary-button" id="mobileShareButton" type="button">
+                  海报
+                </button>
+                <button class="secondary-button" id="mobileCopyLinkButton" type="button">
+                  链接
+                </button>
+                <button class="ghost-button" id="mobileBackButton" type="button">
+                  回大厅
+                </button>
+              </div>
+            </div>
+          </section>
+
           <section class="event-panel">
             <div class="panel-heading small">
               <div>
@@ -335,6 +438,38 @@
           </button>
         </div>
       </form>
+    </dialog>
+
+    <dialog class="mobile-sheet-dialog" id="mobileRosterDialog">
+      <div class="mobile-sheet">
+        <div class="panel-heading small">
+          <div>
+            <p class="eyebrow">Roster</p>
+            <h2>斗士详情</h2>
+          </div>
+          <button class="ghost-button" id="closeMobileRosterDialogButton" type="button">
+            关闭
+          </button>
+        </div>
+        <div class="mobile-sheet-grid" id="mobileRosterDetails"></div>
+      </div>
+    </dialog>
+
+    <dialog class="mobile-sheet-dialog" id="mobileLogDialog">
+      <div class="mobile-sheet">
+        <div class="panel-heading small">
+          <div>
+            <p class="eyebrow">Combat Feed</p>
+            <h2>移动端战报</h2>
+          </div>
+          <button class="ghost-button" id="closeMobileLogDialogButton" type="button">
+            关闭
+          </button>
+        </div>
+        <ul class="combat-feed mobile-combat-feed" id="mobileCombatFeed">
+          <li>等待斗士登场。</li>
+        </ul>
+      </div>
     </dialog>
 
     <script type="module" src="./app.js"></script>

@@ -2,6 +2,8 @@ import {
   buildFighter,
   buildResultSummary,
   clamp,
+  countAttachedArms,
+  countAttachedLegs,
   createBattle,
   createBattleState,
   createFaceSnapshot,
@@ -72,6 +74,12 @@ function collectDom() {
         healthFill: document.getElementById(`healthFill${slot}`),
         hudHealth: document.getElementById(`hudHealth${slot}`),
         hudBleed: document.getElementById(`hudBleed${slot}`),
+        mobileUpload: document.getElementById(`mobileUpload${slot}`),
+        mobileFace: document.getElementById(`mobileFace${slot}`),
+        mobileName: document.getElementById(`mobileName${slot}`),
+        mobileMeta: document.getElementById(`mobileMeta${slot}`),
+        mobileFaceButton: document.getElementById(`mobileFaceButton${slot}`),
+        mobileRegenButton: document.getElementById(`mobileRegenButton${slot}`),
       },
     ]),
   );
@@ -108,6 +116,26 @@ function collectDom() {
     posterPreview: document.getElementById("posterPreview"),
     downloadPosterLink: document.getElementById("downloadPosterLink"),
     shareNativeButton: document.getElementById("shareNativeButton"),
+    mobileStatusTitle: document.getElementById("mobileStatusTitle"),
+    mobileStatusText: document.getElementById("mobileStatusText"),
+    mobilePlayButton: document.getElementById("mobilePlayButton"),
+    mobileRestartButton: document.getElementById("mobileRestartButton"),
+    mobileRosterDialogButton: document.getElementById("mobileRosterDialogButton"),
+    mobileLogDialogButton: document.getElementById("mobileLogDialogButton"),
+    mobileResetButton: document.getElementById("mobileResetButton"),
+    mobileResultTitle: document.getElementById("mobileResultTitle"),
+    mobileResultText: document.getElementById("mobileResultText"),
+    mobileQuickLog: document.getElementById("mobileQuickLog"),
+    mobileShareActions: document.getElementById("mobileShareActions"),
+    mobileShareButton: document.getElementById("mobileShareButton"),
+    mobileCopyLinkButton: document.getElementById("mobileCopyLinkButton"),
+    mobileBackButton: document.getElementById("mobileBackButton"),
+    mobileRosterDialog: document.getElementById("mobileRosterDialog"),
+    closeMobileRosterDialogButton: document.getElementById("closeMobileRosterDialogButton"),
+    mobileRosterDetails: document.getElementById("mobileRosterDetails"),
+    mobileLogDialog: document.getElementById("mobileLogDialog"),
+    closeMobileLogDialogButton: document.getElementById("closeMobileLogDialogButton"),
+    mobileCombatFeed: document.getElementById("mobileCombatFeed"),
   };
 }
 
@@ -119,6 +147,8 @@ function bindEvents(state) {
     });
     dom.slots[slot].faceButton.addEventListener("click", () => openFaceEditor(state, slot));
     dom.slots[slot].regenButton.addEventListener("click", () => regenerateFighter(state, slot));
+    dom.slots[slot].mobileFaceButton.addEventListener("click", () => openFaceEditor(state, slot));
+    dom.slots[slot].mobileRegenButton.addEventListener("click", () => regenerateFighter(state, slot));
   });
 
   dom.playButton.addEventListener("click", () => startBattle(state));
@@ -128,6 +158,16 @@ function bindEvents(state) {
   dom.shareButton.addEventListener("click", () => openPoster(state));
   dom.copyLinkButton.addEventListener("click", () => copyShareLink(state).catch(() => pushFeed(state, "复制链接失败。")));
   dom.shareNativeButton.addEventListener("click", () => shareNative(state).catch(() => {}));
+  dom.mobilePlayButton.addEventListener("click", () => startBattle(state));
+  dom.mobileRestartButton.addEventListener("click", () => startBattle(state));
+  dom.mobileResetButton.addEventListener("click", () => clearRoster(state));
+  dom.mobileShareButton.addEventListener("click", () => openPoster(state));
+  dom.mobileCopyLinkButton.addEventListener("click", () => copyShareLink(state).catch(() => pushFeed(state, "复制链接失败。")));
+  dom.mobileBackButton.addEventListener("click", () => clearRoster(state));
+  dom.mobileRosterDialogButton.addEventListener("click", () => openMobileRosterDialog(state));
+  dom.mobileLogDialogButton.addEventListener("click", () => openMobileLogDialog(state));
+  dom.closeMobileRosterDialogButton.addEventListener("click", () => closeDialog(dom.mobileRosterDialog));
+  dom.closeMobileLogDialogButton.addEventListener("click", () => closeDialog(dom.mobileLogDialog));
 
   dom.closeFaceDialogButton.addEventListener("click", () => closeFaceEditor(state));
   dom.resetFaceSelectionButton.addEventListener("click", () => {
@@ -346,6 +386,8 @@ function finishBattle(state) {
 function clearRoster(state) {
   closeFaceEditor(state);
   if (state.dom.posterDialog.open) state.dom.posterDialog.close();
+  closeDialog(state.dom.mobileRosterDialog);
+  closeDialog(state.dom.mobileLogDialog);
   SLOTS.forEach((slot) => {
     revokeUpload(state.uploads[slot]);
     state.uploads[slot] = null;
@@ -395,18 +437,25 @@ function renderCards(state) {
     dom.input.disabled = locked;
     dom.faceButton.disabled = !upload || locked;
     dom.regenButton.disabled = !upload?.face || locked;
+    dom.mobileFaceButton.disabled = !upload || locked;
+    dom.mobileRegenButton.disabled = !upload?.face || locked;
+    dom.mobileUpload.classList.toggle("is-disabled", locked);
     dom.portraitWrap.classList.toggle("empty", !upload);
     dom.portrait.hidden = !upload;
     dom.placeholder.hidden = Boolean(upload);
     dom.faceChip.hidden = !upload?.face;
+    dom.mobileFace.hidden = !upload;
 
     if (upload) {
       dom.portrait.src = upload.dataUrl;
       dom.faceThumb.src = upload.face?.dataUrl || "";
+      dom.mobileFace.src = upload.face?.dataUrl || upload.dataUrl;
     }
 
     if (roster) {
       dom.name.textContent = roster.displayName;
+      dom.mobileName.textContent = roster.displayName;
+      dom.mobileMeta.textContent = `${roster.style.label} / ${roster.weapon.label}`;
       dom.meta.innerHTML = `
         <div class="meta-row">
           <span class="meta-chip">${roster.style.label}</span>
@@ -423,12 +472,20 @@ function renderCards(state) {
       `;
     } else if (upload) {
       dom.name.textContent = `斗士${slot}待生成`;
+      dom.mobileName.textContent = `斗士${slot}待生成`;
+      dom.mobileMeta.textContent = "已导入照片，待圈脸确认";
       dom.meta.innerHTML = `<p class="hint">已导入照片，确认脸部后即可生成。</p>`;
     } else {
       dom.name.textContent = "等待上传";
+      dom.mobileName.textContent = "等待上传";
+      dom.mobileMeta.textContent = "未导入照片";
       dom.meta.innerHTML = `<p class="hint">尚未生成斗士。</p>`;
     }
+
+    dom.mobileUpload.textContent = upload ? "换图" : "上传";
   });
+
+  renderMobileRosterDetails(state);
 }
 
 function renderHud(state) {
@@ -458,10 +515,17 @@ function renderHud(state) {
 }
 
 function renderFeed(state) {
-  state.dom.combatFeed.innerHTML = state.feed
+  const desktopFeed = state.feed
     .slice(0, 8)
     .map((item) => `<li>${escapeHtml(item)}</li>`)
     .join("");
+  const mobileFeed = state.feed
+    .slice(0, 12)
+    .map((item) => `<li>${escapeHtml(item)}</li>`)
+    .join("");
+  state.dom.combatFeed.innerHTML = desktopFeed;
+  state.dom.mobileCombatFeed.innerHTML = mobileFeed;
+  state.dom.mobileQuickLog.textContent = state.feed[0] || "等待斗士登场。";
 }
 
 function renderStatus(state) {
@@ -469,18 +533,38 @@ function renderStatus(state) {
   state.dom.playButton.disabled = !bothReady || state.battle.status === "fighting";
   state.dom.restartBattleButton.disabled = !bothReady || state.battle.status === "fighting";
   state.dom.resetRosterButton.disabled = state.battle.status === "fighting";
+  state.dom.mobilePlayButton.disabled = !bothReady || state.battle.status === "fighting";
+  state.dom.mobileRestartButton.disabled = !bothReady || state.battle.status === "fighting";
+  state.dom.mobileResetButton.disabled = state.battle.status === "fighting";
   state.dom.resultPanel.hidden = state.battle.status !== "finished";
+  state.dom.mobileShareActions.hidden = state.battle.status !== "finished";
 
   if (state.battle.status === "fighting") {
     state.dom.statusText.textContent = "战斗已开始，双方会自动寻找距离、格挡、冲刺、断肢并持续失血。";
+    state.dom.mobileStatusTitle.textContent = "战斗进行中";
+    state.dom.mobileStatusText.textContent = "上半屏是战斗视图，下半屏保留必要控制，完整播报可点“战报”。";
+    state.dom.mobileResultTitle.textContent = "实时播报";
+    state.dom.mobileResultText.textContent = "双方会持续机动、试探、格挡、追击并在断肢后快速失血。";
   } else if (state.battle.status === "finished") {
     state.dom.statusText.textContent = "本轮胜负已定，你可以生成海报、复制链接，或回到主界面重选斗士。";
     state.dom.resultTitle.textContent = `${state.battle.winner.roster.displayName} 获胜`;
     state.dom.resultSummary.textContent = buildResultSummary(state.battle);
+    state.dom.mobileStatusTitle.textContent = "本轮结束";
+    state.dom.mobileStatusText.textContent = "你可以在下半屏直接生成海报或复制链接。";
+    state.dom.mobileResultTitle.textContent = state.dom.resultTitle.textContent;
+    state.dom.mobileResultText.textContent = buildMobileResultText(state.battle);
   } else if (bothReady) {
     state.dom.statusText.textContent = "两名斗士已生成，点击 Play 开始自动战斗。";
+    state.dom.mobileStatusTitle.textContent = "斗士已就位";
+    state.dom.mobileStatusText.textContent = "点击 Play 开始自动战斗，斗士详情可从下半屏按钮打开。";
+    state.dom.mobileResultTitle.textContent = "等待开战";
+    state.dom.mobileResultText.textContent = "两侧都已完成脸部映射和角色塑形。";
   } else {
     state.dom.statusText.textContent = "先为两侧上传人像并手动圈选脸部，再点击 Play。";
+    state.dom.mobileStatusTitle.textContent = "准备中";
+    state.dom.mobileStatusText.textContent = "先上传两侧人像并圈脸，移动端会把战斗和控制都压进同一屏。";
+    state.dom.mobileResultTitle.textContent = "等待开战";
+    state.dom.mobileResultText.textContent = "上传并圈出两张脸后即可进入自动战斗。完整斗士信息和播报可从下方按钮打开。";
   }
 }
 
@@ -521,6 +605,16 @@ function openPoster(state) {
   state.dom.posterPreview.src = state.posterDataUrl;
   state.dom.downloadPosterLink.href = state.posterDataUrl;
   if (!state.dom.posterDialog.open) state.dom.posterDialog.showModal();
+}
+
+function openMobileRosterDialog(state) {
+  renderMobileRosterDetails(state);
+  if (!state.dom.mobileRosterDialog.open) state.dom.mobileRosterDialog.showModal();
+}
+
+function openMobileLogDialog(state) {
+  renderFeed(state);
+  if (!state.dom.mobileLogDialog.open) state.dom.mobileLogDialog.showModal();
 }
 
 async function copyShareLink(state) {
@@ -569,6 +663,59 @@ function renderShareBanner(state, payload, url) {
   `;
 }
 
+function renderMobileRosterDetails(state) {
+  state.dom.mobileRosterDetails.innerHTML = SLOTS.map((slot) => {
+    const upload = state.uploads[slot];
+    const roster = state.rosters[slot];
+    if (!upload) {
+      return `
+        <article class="mobile-detail-card">
+          <div class="mobile-detail-head">
+            <div>
+              <strong>斗士${slot}</strong>
+              <p class="mobile-detail-meta">尚未导入照片</p>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    const imageMarkup = `<img src="${escapeAttribute(upload.face?.dataUrl || upload.dataUrl)}" alt="斗士${slot}预览" />`;
+    if (!roster) {
+      return `
+        <article class="mobile-detail-card">
+          <div class="mobile-detail-head">
+            ${imageMarkup}
+            <div>
+              <strong>斗士${slot}待生成</strong>
+              <p class="mobile-detail-meta">已导入照片，等待脸部确认</p>
+            </div>
+          </div>
+        </article>
+      `;
+    }
+
+    return `
+      <article class="mobile-detail-card">
+        <div class="mobile-detail-head">
+          ${imageMarkup}
+          <div>
+            <strong>${escapeHtml(roster.displayName)}</strong>
+            <p class="mobile-detail-meta">${escapeHtml(roster.style.label)} / ${escapeHtml(roster.weapon.label)} / ${escapeHtml(roster.body.label)}</p>
+          </div>
+        </div>
+        <p class="mobile-detail-meta">${escapeHtml(roster.style.description)}</p>
+        <div class="meta-row">
+          <span class="meta-chip">力量 ${roster.stats.power}</span>
+          <span class="meta-chip">速度 ${roster.stats.speed}</span>
+          <span class="meta-chip">防御 ${roster.stats.guard}</span>
+          <span class="meta-chip">体魄 ${roster.stats.grit}</span>
+        </div>
+      </article>
+    `;
+  }).join("");
+}
+
 function pushFeed(state, message) {
   state.feed.unshift(message);
   state.feed = state.feed.slice(0, 12);
@@ -577,6 +724,15 @@ function pushFeed(state, message) {
 
 function revokeUpload(upload) {
   if (upload?.objectUrl) URL.revokeObjectURL(upload.objectUrl);
+}
+
+function buildMobileResultText(battle) {
+  if (!battle?.winner || !battle?.loser) return "";
+  return `${battle.winner.roster.displayName} 以 ${Math.round(battle.winner.health)} HP 存活。${battle.loser.roster.displayName} 失去手臂 ${2 - countAttachedArms(battle.loser)} 条、腿部 ${2 - countAttachedLegs(battle.loser)} 条。`;
+}
+
+function closeDialog(dialog) {
+  if (dialog?.open) dialog.close();
 }
 
 function facePoint(event, canvas) {
