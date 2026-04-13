@@ -9,7 +9,7 @@ description = "Windows-first experimental semantic compiler and runtime for guar
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "google-genai>=1.63.0",
+    "google-genai>=1.72.0",
     "pydantic>=2.12.5",
     "python-dotenv>=1.2.1",
     "z3-solver>=4.15.8.0",
