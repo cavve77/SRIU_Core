@@ -1,7 +1,11 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "sriu-core"
 version = "0.1.0"
-description = "Add your description here"
+description = "Windows-first experimental semantic compiler and runtime for guarded local engineering workflows."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -10,3 +14,17 @@ dependencies = [
     "python-dotenv>=1.2.1",
     "z3-solver>=4.15.8.0",
 ]
+
+[project.scripts]
+sriu = "sriu.console:main"
+sriu-gui = "sriu.gui.app:main"
+
+[project.urls]
+Repository = "https://github.com/cavve77/SRIU_Core"
+Issues = "https://github.com/cavve77/SRIU_Core/issues"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]

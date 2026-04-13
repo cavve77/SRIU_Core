@@ -1,18 +1,32 @@
-﻿.env
+.env
+.env.*
+!.env.example
 .venv/
 .python-version
 __pycache__/
 *.pyc
 .uv/
+.uv-cache/
+.coverage
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage.xml
+htmlcov/
 sriu_temp*/
 ghost_file.txt
 *.log
 .aider.chat.history.md
 .aider.input.history
 .vscode/
+.idea/
 .sriu/backups/
+.test-deps/
+.verify-venv/
+global_registry.json
+*.egg-info/
 
-# PyInstaller Artifacts
+# PyInstaller artifacts
 build/
 dist/
 *.spec
