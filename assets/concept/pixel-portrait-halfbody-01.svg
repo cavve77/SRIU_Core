@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <title>Pixel portrait half-body concept 01</title>
+  <desc>Retro pixel-art half-body portrait of a neutral adventurer.</desc>
+  <style>
+    .bg-dark { fill: #7f6f5d; }
+    .bg-light { fill: #d8cfbe; }
+    .outline { fill: #241b1b; }
+    .hair { fill: #6e4127; }
+    .hair-shade { fill: #4f2c19; }
+    .skin { fill: #f1c7a0; }
+    .skin-shade { fill: #d9a37f; }
+    .eye { fill: #1e1a18; }
+    .mouth { fill: #8e4b46; }
+    .coat { fill: #3a5f7d; }
+    .coat-shade { fill: #264259; }
+    .shirt { fill: #c7b34a; }
+  </style>
+
+  <rect class="bg-dark" x="0" y="0" width="16" height="16" />
+  <rect class="bg-light" x="1" y="1" width="14" height="14" />
+
+  <rect class="hair" x="6" y="1" width="4" height="1" />
+  <rect class="hair" x="5" y="2" width="6" height="1" />
+
+  <rect class="outline" x="4" y="3" width="1" height="1" />
+  <rect class="hair" x="5" y="3" width="6" height="1" />
+  <rect class="outline" x="11" y="3" width="1" height="1" />
+
+  <rect class="outline" x="3" y="4" width="1" height="1" />
+  <rect class="hair" x="4" y="4" width="5" height="1" />
+  <rect class="hair-shade" x="9" y="4" width="3" height="1" />
+  <rect class="outline" x="12" y="4" width="1" height="1" />
+
+  <rect class="outline" x="3" y="5" width="1" height="1" />
+  <rect class="hair" x="4" y="5" width="2" height="1" />
+  <rect class="skin" x="6" y="5" width="3" height="1" />
+  <rect class="skin-shade" x="9" y="5" width="1" height="1" />
+  <rect class="hair-shade" x="10" y="5" width="2" height="1" />
+  <rect class="outline" x="12" y="5" width="1" height="1" />
+
+  <rect class="outline" x="3" y="6" width="1" height="1" />
+  <rect class="hair" x="4" y="6" width="1" height="1" />
+  <rect class="skin" x="5" y="6" width="1" height="1" />
+  <rect class="eye" x="6" y="6" width="1" height="1" />
+  <rect class="skin" x="7" y="6" width="2" height="1" />
+  <rect class="eye" x="9" y="6" width="1" height="1" />
+  <rect class="skin-shade" x="10" y="6" width="1" height="1" />
+  <rect class="hair-shade" x="11" y="6" width="1" height="1" />
+  <rect class="outline" x="12" y="6" width="1" height="1" />
+
+  <rect class="outline" x="4" y="7" width="1" height="1" />
+  <rect class="skin" x="5" y="7" width="4" height="1" />
+  <rect class="skin-shade" x="9" y="7" width="2" height="1" />
+  <rect class="outline" x="11" y="7" width="1" height="1" />
+
+  <rect class="outline" x="5" y="8" width="1" height="1" />
+  <rect class="skin" x="6" y="8" width="1" height="1" />
+  <rect class="mouth" x="7" y="8" width="2" height="1" />
+  <rect class="skin-shade" x="9" y="8" width="1" height="1" />
+  <rect class="outline" x="10" y="8" width="1" height="1" />
+
+  <rect class="outline" x="4" y="9" width="1" height="1" />
+  <rect class="coat" x="5" y="9" width="2" height="1" />
+  <rect class="skin" x="7" y="9" width="2" height="1" />
+  <rect class="coat-shade" x="9" y="9" width="3" height="1" />
+  <rect class="outline" x="12" y="9" width="1" height="1" />
+
+  <rect class="outline" x="2" y="10" width="1" height="1" />
+  <rect class="coat" x="3" y="10" width="3" height="1" />
+  <rect class="shirt" x="6" y="10" width="4" height="1" />
+  <rect class="coat-shade" x="10" y="10" width="3" height="1" />
+  <rect class="outline" x="13" y="10" width="1" height="1" />
+
+  <rect class="outline" x="2" y="11" width="1" height="1" />
+  <rect class="coat" x="3" y="11" width="2" height="1" />
+  <rect class="shirt" x="5" y="11" width="6" height="1" />
+  <rect class="coat-shade" x="11" y="11" width="2" height="1" />
+  <rect class="outline" x="13" y="11" width="1" height="1" />
+
+  <rect class="outline" x="2" y="12" width="1" height="1" />
+  <rect class="coat" x="3" y="12" width="2" height="1" />
+  <rect class="shirt" x="5" y="12" width="6" height="1" />
+  <rect class="coat-shade" x="11" y="12" width="2" height="1" />
+  <rect class="outline" x="13" y="12" width="1" height="1" />
+
+  <rect class="outline" x="3" y="13" width="1" height="1" />
+  <rect class="coat" x="4" y="13" width="2" height="1" />
+  <rect class="shirt" x="6" y="13" width="4" height="1" />
+  <rect class="coat-shade" x="10" y="13" width="2" height="1" />
+  <rect class="outline" x="12" y="13" width="1" height="1" />
+
+  <rect class="outline" x="4" y="14" width="1" height="1" />
+  <rect class="coat" x="5" y="14" width="3" height="1" />
+  <rect class="coat-shade" x="8" y="14" width="3" height="1" />
+  <rect class="outline" x="11" y="14" width="1" height="1" />
+
+  <rect class="outline" x="5" y="15" width="1" height="1" />
+  <rect class="coat" x="6" y="15" width="2" height="1" />
+  <rect class="coat-shade" x="8" y="15" width="2" height="1" />
+  <rect class="outline" x="10" y="15" width="1" height="1" />
+</svg>

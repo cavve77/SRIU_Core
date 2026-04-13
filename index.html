@@ -9,7 +9,7 @@
     <title>Portrait Pit</title>
     <meta
       name="description"
-      content="上传两张人像，生成两位斗士，在浏览器里观看一场自动决斗。"
+      content="上传两张人像，手动圈选脸部，生成两名斗士并观看自动决斗。"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -26,13 +26,13 @@
           <p class="eyebrow">H5 Auto Battle</p>
           <h1>Portrait Pit</h1>
           <p class="hero-text">
-            上传两张人像，系统会根据图像特征和生成时的时间戳，把他们塑造成两名风格迥异的斗士。
-            开战后他们会自动厮杀，断肢会加重失血，直到一方彻底倒下。
+            先上传人像，再手动圈出脸部区域。系统会把你选定的脸自动映射到斗士头部，并结合照片特征与时间戳，
+            生成一名身体、武器、斗法都不同的战士。
           </p>
           <div class="hero-chips">
-            <span>本地处理照片</span>
+            <span>手动圈脸</span>
             <span>无后端</span>
-            <span>可生成分享海报</span>
+            <span>GitHub Pages 试玩</span>
           </div>
         </div>
         <aside class="share-banner" id="shareBanner" hidden>
@@ -46,7 +46,7 @@
           <div class="panel-heading">
             <div>
               <p class="eyebrow">Fighter Forge</p>
-              <h2>生成斗士</h2>
+              <h2>上传、圈脸、生成</h2>
             </div>
             <button class="ghost-button" id="resetRosterButton" type="button">
               清空斗士
@@ -60,15 +60,26 @@
                   <p class="eyebrow">斗士A</p>
                   <h3 id="nameA">等待上传</h3>
                 </div>
-                <button
-                  class="secondary-button regen-button"
-                  id="regenA"
-                  data-slot="A"
-                  type="button"
-                  disabled
-                >
-                  重铸
-                </button>
+                <div class="slot-actions">
+                  <button
+                    class="ghost-button face-button"
+                    id="faceButtonA"
+                    data-slot="A"
+                    type="button"
+                    disabled
+                  >
+                    调整脸部
+                  </button>
+                  <button
+                    class="secondary-button regen-button"
+                    id="regenA"
+                    data-slot="A"
+                    type="button"
+                    disabled
+                  >
+                    重铸
+                  </button>
+                </div>
               </div>
 
               <label class="upload-tile" for="uploadA">
@@ -80,7 +91,7 @@
                 />
                 <span class="upload-title">上传人像照片</span>
                 <span class="upload-subtitle">
-                  建议使用正面或半身照，图片只在本机浏览器处理
+                  上传后会进入圈脸流程，确认脸部后才会生成斗士
                 </span>
               </label>
 
@@ -88,6 +99,10 @@
                 <img id="portraitA" alt="斗士A 预览" hidden />
                 <div class="portrait-placeholder" id="placeholderA">
                   Portrait A
+                </div>
+                <div class="face-chip" id="faceChipA" hidden>
+                  <img id="faceThumbA" alt="斗士A 脸部裁切" />
+                  <span>脸部已锁定</span>
                 </div>
               </div>
 
@@ -102,15 +117,26 @@
                   <p class="eyebrow">斗士B</p>
                   <h3 id="nameB">等待上传</h3>
                 </div>
-                <button
-                  class="secondary-button regen-button"
-                  id="regenB"
-                  data-slot="B"
-                  type="button"
-                  disabled
-                >
-                  重铸
-                </button>
+                <div class="slot-actions">
+                  <button
+                    class="ghost-button face-button"
+                    id="faceButtonB"
+                    data-slot="B"
+                    type="button"
+                    disabled
+                  >
+                    调整脸部
+                  </button>
+                  <button
+                    class="secondary-button regen-button"
+                    id="regenB"
+                    data-slot="B"
+                    type="button"
+                    disabled
+                  >
+                    重铸
+                  </button>
+                </div>
               </div>
 
               <label class="upload-tile" for="uploadB">
@@ -122,7 +148,7 @@
                 />
                 <span class="upload-title">上传人像照片</span>
                 <span class="upload-subtitle">
-                  斗士体格与招式将被照片特征和时间戳共同塑形
+                  斗士脸部会使用你手动圈出的区域，身体和斗法由特征与时间戳共同塑形
                 </span>
               </label>
 
@@ -130,6 +156,10 @@
                 <img id="portraitB" alt="斗士B 预览" hidden />
                 <div class="portrait-placeholder" id="placeholderB">
                   Portrait B
+                </div>
+                <div class="face-chip" id="faceChipB" hidden>
+                  <img id="faceThumbB" alt="斗士B 脸部裁切" />
+                  <span>脸部已锁定</span>
                 </div>
               </div>
 
@@ -144,7 +174,7 @@
               <p class="eyebrow">Ready Room</p>
               <h2>战斗流程</h2>
               <p id="statusText">
-                先为两侧都上传照片并完成生成，然后点击 Play。
+                先为两侧都上传照片并完成圈脸，然后点击 Play。
               </p>
             </div>
             <div class="action-buttons">
@@ -229,11 +259,58 @@
           </div>
 
           <div class="arena-stage">
-            <canvas id="arenaCanvas" width="1280" height="720"></canvas>
+            <canvas id="arenaCanvas" width="1280" height="760"></canvas>
           </div>
         </section>
       </main>
     </div>
+
+    <dialog class="face-dialog" id="faceDialog">
+      <div class="face-sheet">
+        <div class="panel-heading small">
+          <div>
+            <p class="eyebrow">Face Mapper</p>
+            <h2 id="faceEditorTitle">圈选斗士脸部</h2>
+          </div>
+          <button class="ghost-button" id="closeFaceDialogButton" type="button">
+            取消
+          </button>
+        </div>
+        <div class="face-layout">
+          <div class="face-canvas-wrap">
+            <canvas id="faceEditorCanvas" width="960" height="960"></canvas>
+          </div>
+          <aside class="face-sidebar">
+            <p class="hint">
+              在图中拖动选框调整位置。下方滑杆可以细调横向、纵向和尺寸。
+            </p>
+            <canvas id="facePreviewCanvas" width="320" height="320"></canvas>
+            <div class="face-sliders">
+              <label class="slider-row">
+                <span>横向</span>
+                <input id="faceSliderX" type="range" min="0" max="100" value="50" />
+              </label>
+              <label class="slider-row">
+                <span>纵向</span>
+                <input id="faceSliderY" type="range" min="0" max="100" value="34" />
+              </label>
+              <label class="slider-row">
+                <span>尺寸</span>
+                <input id="faceSliderSize" type="range" min="18" max="78" value="42" />
+              </label>
+            </div>
+            <div class="poster-actions">
+              <button class="secondary-button" id="resetFaceSelectionButton" type="button">
+                还原默认
+              </button>
+              <button class="primary-button" id="confirmFaceSelectionButton" type="button">
+                确认脸部并生成
+              </button>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </dialog>
 
     <dialog class="poster-dialog" id="posterDialog">
       <form method="dialog" class="poster-sheet">
@@ -246,7 +323,11 @@
         </div>
         <img id="posterPreview" alt="分享海报预览" />
         <div class="poster-actions">
-          <a class="primary-button link-button" id="downloadPosterLink" download="portrait-pit-poster.png">
+          <a
+            class="primary-button link-button"
+            id="downloadPosterLink"
+            download="portrait-pit-poster.png"
+          >
             下载海报
           </a>
           <button class="secondary-button" id="shareNativeButton" type="button">

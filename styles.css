@@ -278,6 +278,13 @@ h3 {
   gap: 12px;
 }
 
+.slot-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 .upload-tile {
   display: grid;
   gap: 8px;
@@ -303,6 +310,7 @@ h3 {
 .combat-feed li,
 .hud-metrics,
 .share-link-row,
+.meta-line,
 .share-banner .meta-line {
   color: var(--muted);
 }
@@ -334,6 +342,35 @@ h3 {
   object-fit: cover;
 }
 
+.face-chip {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px 8px 8px;
+  border-radius: 999px;
+  background: rgba(10, 14, 24, 0.76);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+}
+
+.face-chip img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  object-fit: cover;
+}
+
+.face-chip span {
+  color: #f7e0cf;
+  font-size: 0.84rem;
+}
+
 .portrait-placeholder {
   position: relative;
   z-index: 1;
@@ -350,6 +387,34 @@ h3 {
 
 .meta-block {
   margin-top: 16px;
+}
+
+.meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.meta-line {
+  margin: 14px 0 0;
+  line-height: 1.6;
+}
+
+.meta-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.meta-stats span {
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f5f4ef;
+  font-family: var(--font-display);
+  font-size: 0.92rem;
 }
 
 .meta-title {
@@ -545,7 +610,7 @@ h3 {
 
 .arena-stage {
   position: relative;
-  min-height: 680px;
+  min-height: 760px;
   border-radius: 32px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -561,24 +626,88 @@ h3 {
   height: 100%;
 }
 
+.face-dialog,
 .poster-dialog {
-  width: min(560px, calc(100vw - 24px));
+  width: min(1040px, calc(100vw - 24px));
   padding: 0;
   border: 0;
   background: transparent;
 }
 
+.face-dialog::backdrop,
 .poster-dialog::backdrop {
   background: rgba(0, 0, 0, 0.68);
   backdrop-filter: blur(8px);
 }
 
+.face-sheet,
 .poster-sheet {
   display: grid;
   gap: 18px;
   width: 100%;
   padding: 20px;
   border-radius: 28px;
+  background: var(--panel-strong);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.face-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, 320px);
+  gap: 18px;
+}
+
+.face-canvas-wrap {
+  min-height: 560px;
+  padding: 18px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at top, rgba(255, 209, 102, 0.1), transparent 45%),
+    rgba(8, 10, 18, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+#faceEditorCanvas,
+#facePreviewCanvas {
+  display: block;
+  width: 100%;
+  border-radius: 20px;
+}
+
+.face-sidebar {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+}
+
+#facePreviewCanvas {
+  max-width: 220px;
+  margin: 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background:
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.16), transparent 50%),
+    linear-gradient(180deg, rgba(31, 39, 63, 0.78), rgba(10, 12, 18, 0.96));
+}
+
+.face-sliders {
+  display: grid;
+  gap: 14px;
+}
+
+.slider-row {
+  display: grid;
+  gap: 8px;
+}
+
+.slider-row span {
+  color: #f7dbc7;
+  font-size: 0.92rem;
+}
+
+.slider-row input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
 }
 
 #posterPreview {
@@ -593,6 +722,24 @@ h3 {
 
 .link-button {
   white-space: nowrap;
+}
+
+.share-link-row {
+  margin-top: 14px;
+}
+
+.share-link-row a {
+  color: #f8ddc6;
+  text-decoration: none;
+}
+
+.share-link-row a:hover {
+  text-decoration: underline;
+}
+
+.face-canvas-wrap canvas,
+.face-sidebar canvas {
+  touch-action: none;
 }
 
 .sr-only {
@@ -656,7 +803,7 @@ h3 {
   }
 
   .arena-stage {
-    min-height: 480px;
+    min-height: 560px;
   }
 
   .slot-topline,
@@ -666,6 +813,16 @@ h3 {
   .poster-actions {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .slot-actions,
+  .face-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .face-canvas-wrap {
+    min-height: 380px;
+    padding: 12px;
   }
 
   .stat-grid {
